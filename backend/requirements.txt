@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+pydantic
+python-dotenv
+jinja2
+weasyprint
+matplotlib
+fpdf2
+yagmail
+email-validator
+litellm
+networkx
