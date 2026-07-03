@@ -11,9 +11,7 @@ export default function MockDataBanner() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const dismissedAt = Number(raw);
-      if (!Number.isNaN(dismissedAt) && Date.now() - dismissedAt < HIDE_MS) {
-        return;
-      }
+      if (!Number.isNaN(dismissedAt) && Date.now() - dismissedAt < HIDE_MS) return;
     }
     setVisible(true);
   }, []);
@@ -26,14 +24,9 @@ export default function MockDataBanner() {
   }
 
   return (
-    <div className="relative flex items-center justify-center gap-3 bg-amber-500/90 px-4 py-2 text-sm text-amber-950">
-      <span>演示版本 · 模拟数据 · 不构成任何参考意见</span>
-      <button
-        type="button"
-        onClick={dismiss}
-        className="absolute right-3 rounded p-1 hover:bg-amber-600/30"
-        aria-label="关闭提示"
-      >
+    <div className="relative flex items-center justify-center gap-3 bg-transparent border-b border-white/[0.06] px-4 py-2 text-xs text-neutral-400">
+      <span>模拟数据 · 200 家</span>
+      <button type="button" onClick={dismiss} className="absolute right-3 rounded p-1 hover:bg-white/10" aria-label="关闭提示">
         <X className="h-4 w-4" />
       </button>
     </div>

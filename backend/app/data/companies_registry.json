@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "ENT001",
+    "name": "深圳明达科技有限公司",
+    "industry_l1": "制造业",
+    "initials": "SMDKJYXGS"
+  },
+  {
+    "id": "ENT002",
+    "name": "上海恒信贸易集团",
+    "industry_l1": "批发零售",
+    "initials": "SHHXMYJT"
+  },
+  {
+    "id": "ENT003",
+    "name": "北京智云信息技术有限公司",
+    "industry_l1": "信息技术",
+    "initials": "BZYXXJYXGS"
+  },
+  {
+    "id": "ENT004",
+    "name": "广州华南制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "GZHNZZGFYXGS"
+  },
+  {
+    "id": "ENT005",
+    "name": "杭州绿源新能源科技",
+    "industry_l1": "新能源",
+    "initials": "HZLYXNYKJ"
+  },
+  {
+    "id": "ENT006",
+    "name": "成都天府物流有限公司",
+    "industry_l1": "交通运输",
+    "initials": "CTFWLYXGS"
+  },
+  {
+    "id": "ENT007",
+    "name": "武汉光谷生物医药",
+    "industry_l1": "医药",
+    "initials": "WGGSWYY"
+  },
+  {
+    "id": "ENT008",
+    "name": "南京金陵建筑工程",
+    "industry_l1": "建筑业",
+    "initials": "NJLJZGC"
+  },
+  {
+    "id": "ENT009",
+    "name": "天津滨海港口服务",
+    "industry_l1": "交通运输",
+    "initials": "TBHGKF"
+  },
+  {
+    "id": "ENT010",
+    "name": "重庆山城餐饮连锁",
+    "industry_l1": "餐饮",
+    "initials": "CSCCYL"
+  },
+  {
+    "id": "ENT011",
+    "name": "宁波远洋贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "NYMYGFYXGS"
+  },
+  {
+    "id": "ENT012",
+    "name": "厦门市新锐信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "XSXXXKJJTYXGS"
+  },
+  {
+    "id": "ENT013",
+    "name": "广州市天成贸易实业有限公司",
+    "industry_l1": "批发零售",
+    "initials": "GZSTCMYSYYXGS"
+  },
+  {
+    "id": "ENT014",
+    "name": "杭州黄河贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "HZHMYYXGS"
+  },
+  {
+    "id": "ENT015",
+    "name": "天津市西部新能源股份有限公司",
+    "industry_l1": "新能源",
+    "initials": "TSXXNYGFYXGS"
+  },
+  {
+    "id": "ENT016",
+    "name": "上海中汇精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "SHZHJMZZGFYXGS"
+  },
+  {
+    "id": "ENT017",
+    "name": "深圳市正信信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SSXXXKJJTYXGS"
+  },
+  {
+    "id": "ENT018",
+    "name": "东莞市宏图新能源股份有限公司",
+    "industry_l1": "新能源",
+    "initials": "DGSXNYGFYXGS"
+  },
+  {
+    "id": "ENT019",
+    "name": "杭州市南方建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "HZSNJSGCSYYXGS"
+  },
+  {
+    "id": "ENT020",
+    "name": "深圳市广汇贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "SSGHMYJTYXGS"
+  },
+  {
+    "id": "ENT021",
+    "name": "长沙北方精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "CBJMZZSYYXGS"
+  },
+  {
+    "id": "ENT022",
+    "name": "宁波市盛泰贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "NSSTMYYXGS"
+  },
+  {
+    "id": "ENT023",
+    "name": "长沙新锐餐饮管理股份有限公司",
+    "industry_l1": "餐饮",
+    "initials": "CXCYGFYXGS"
+  },
+  {
+    "id": "ENT024",
+    "name": "深圳恒达建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "SHDJSGCGFYXGS"
+  },
+  {
+    "id": "ENT025",
+    "name": "重庆智联建设工程集团有限公司",
+    "industry_l1": "建筑业",
+    "initials": "CZLJSGCJTYXGS"
+  },
+  {
+    "id": "ENT026",
+    "name": "杭州德盛医药集团有限公司",
+    "industry_l1": "医药",
+    "initials": "HZDSYYJTYXGS"
+  },
+  {
+    "id": "ENT027",
+    "name": "青岛市博远物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "QSBYWLGFYXGS"
+  },
+  {
+    "id": "ENT028",
+    "name": "郑州市天成精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "ZZSTCJMZZYXGS"
+  },
+  {
+    "id": "ENT029",
+    "name": "重庆鑫源新能源集团有限公司",
+    "industry_l1": "新能源",
+    "initials": "CXYXNYJTYXGS"
+  },
+  {
+    "id": "ENT030",
+    "name": "上海恒达餐饮管理实业有限公司",
+    "industry_l1": "餐饮",
+    "initials": "SHHDCYSYYXGS"
+  },
+  {
+    "id": "ENT031",
+    "name": "东莞中汇信息科技有限公司",
+    "industry_l1": "信息技术",
+    "initials": "DGZHXXKJYXGS"
+  },
+  {
+    "id": "ENT032",
+    "name": "厦门市高新物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "XSXWLGFYXGS"
+  },
+  {
+    "id": "ENT033",
+    "name": "天津市珠江信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "TSZXXKJSYYXGS"
+  },
+  {
+    "id": "ENT034",
+    "name": "西安市长江金融服务集团有限公司",
+    "industry_l1": "金融",
+    "initials": "XASCJRFJTYXGS"
+  },
+  {
+    "id": "ENT035",
+    "name": "长沙市滨海贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSBHMYJTYXGS"
+  },
+  {
+    "id": "ENT036",
+    "name": "天津市汇通新能源集团有限公司",
+    "industry_l1": "新能源",
+    "initials": "TSHTXNYJTYXGS"
+  },
+  {
+    "id": "ENT037",
+    "name": "佛山华创物流有限公司",
+    "industry_l1": "交通运输",
+    "initials": "FSHCWLYXGS"
+  },
+  {
+    "id": "ENT038",
+    "name": "南京市鑫源物流集团有限公司",
+    "industry_l1": "交通运输",
+    "initials": "NSXYWLJTYXGS"
+  },
+  {
+    "id": "ENT039",
+    "name": "成都新锐信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CXXXKJGFYXGS"
+  },
+  {
+    "id": "ENT040",
+    "name": "深圳市金鼎医药股份有限公司",
+    "industry_l1": "医药",
+    "initials": "SSJYYGFYXGS"
+  },
+  {
+    "id": "ENT041",
+    "name": "深圳鑫源信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SXYXXKJSYYXGS"
+  },
+  {
+    "id": "ENT042",
+    "name": "佛山市珠江新能源股份有限公司",
+    "industry_l1": "新能源",
+    "initials": "FSSZXNYGFYXGS"
+  },
+  {
+    "id": "ENT043",
+    "name": "长沙鑫源物流集团有限公司",
+    "industry_l1": "交通运输",
+    "initials": "CXYWLJTYXGS"
+  },
+  {
+    "id": "ENT044",
+    "name": "重庆珠江金融服务有限公司",
+    "industry_l1": "金融",
+    "initials": "CZJRFYXGS"
+  },
+  {
+    "id": "ENT045",
+    "name": "青岛市智联贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "QSZLMYGFYXGS"
+  },
+  {
+    "id": "ENT046",
+    "name": "佛山市宏图信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "FSSXXKJSYYXGS"
+  },
+  {
+    "id": "ENT047",
+    "name": "东莞市远洋精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "DGSYJMZZYXGS"
+  },
+  {
+    "id": "ENT048",
+    "name": "佛山市新锐建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "FSSXJSGCSYYXGS"
+  },
+  {
+    "id": "ENT049",
+    "name": "杭州盛泰信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "HZSTXXKJGFYXGS"
+  },
+  {
+    "id": "ENT050",
+    "name": "武汉市德盛新能源有限公司",
+    "industry_l1": "新能源",
+    "initials": "WSDSXNYYXGS"
+  },
+  {
+    "id": "ENT051",
+    "name": "广州国联精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "GZLJMZZYXGS"
+  },
+  {
+    "id": "ENT052",
+    "name": "成都市博远贸易实业有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSBYMYSYYXGS"
+  },
+  {
+    "id": "ENT053",
+    "name": "上海东方金融服务有限公司",
+    "industry_l1": "金融",
+    "initials": "SHDJRFYXGS"
+  },
+  {
+    "id": "ENT054",
+    "name": "西安市华创贸易实业有限公司",
+    "industry_l1": "批发零售",
+    "initials": "XASHCMYSYYXGS"
+  },
+  {
+    "id": "ENT055",
+    "name": "武汉市东方建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "WSDJSGCSYYXGS"
+  },
+  {
+    "id": "ENT056",
+    "name": "郑州市华创新能源实业有限公司",
+    "industry_l1": "新能源",
+    "initials": "ZZSHCXNYSYYXGS"
+  },
+  {
+    "id": "ENT057",
+    "name": "广州宏图精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "GZJMZZSYYXGS"
+  },
+  {
+    "id": "ENT058",
+    "name": "西安市国联新能源有限公司",
+    "industry_l1": "新能源",
+    "initials": "XASLXNYYXGS"
+  },
+  {
+    "id": "ENT059",
+    "name": "厦门鑫源信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "XXYXXKJSYYXGS"
+  },
+  {
+    "id": "ENT060",
+    "name": "东莞市西部精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "DGSXJMZZSYYXGS"
+  },
+  {
+    "id": "ENT061",
+    "name": "重庆滨海医药实业有限公司",
+    "industry_l1": "医药",
+    "initials": "CBHYYSYYXGS"
+  },
+  {
+    "id": "ENT062",
+    "name": "苏州市国联精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "SZSLJMZZSYYXGS"
+  },
+  {
+    "id": "ENT063",
+    "name": "上海恒达精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "SHHDJMZZGFYXGS"
+  },
+  {
+    "id": "ENT064",
+    "name": "郑州市远洋物流有限公司",
+    "industry_l1": "交通运输",
+    "initials": "ZZSYWLYXGS"
+  },
+  {
+    "id": "ENT065",
+    "name": "长沙瑞丰信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CFXXKJJTYXGS"
+  },
+  {
+    "id": "ENT066",
+    "name": "东莞宏图精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "DGJMZZSYYXGS"
+  },
+  {
+    "id": "ENT067",
+    "name": "郑州高新精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "ZZXJMZZYXGS"
+  },
+  {
+    "id": "ENT068",
+    "name": "西安南方贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "XANMYJTYXGS"
+  },
+  {
+    "id": "ENT069",
+    "name": "青岛市恒达金融服务有限公司",
+    "industry_l1": "金融",
+    "initials": "QSHDJRFYXGS"
+  },
+  {
+    "id": "ENT070",
+    "name": "西安中汇精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "XAZHJMZZGFYXGS"
+  },
+  {
+    "id": "ENT071",
+    "name": "厦门市新纪元精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "XSXJMZZSYYXGS"
+  },
+  {
+    "id": "ENT072",
+    "name": "佛山远洋信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "FSYXXKJJTYXGS"
+  },
+  {
+    "id": "ENT073",
+    "name": "天津市新纪元贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "TSXMYJTYXGS"
+  },
+  {
+    "id": "ENT074",
+    "name": "广州市广汇医药实业有限公司",
+    "industry_l1": "医药",
+    "initials": "GZSGHYYSYYXGS"
+  },
+  {
+    "id": "ENT075",
+    "name": "郑州嘉禾贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "ZZMYJTYXGS"
+  },
+  {
+    "id": "ENT076",
+    "name": "苏州北方精密制造集团有限公司",
+    "industry_l1": "制造业",
+    "initials": "SZBJMZZJTYXGS"
+  },
+  {
+    "id": "ENT077",
+    "name": "青岛联合餐饮管理集团有限公司",
+    "industry_l1": "餐饮",
+    "initials": "QLHCYJTYXGS"
+  },
+  {
+    "id": "ENT078",
+    "name": "上海市汇通建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "SHSHTJSGCGFYXGS"
+  },
+  {
+    "id": "ENT079",
+    "name": "天津市长江信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "TSCXXKJSYYXGS"
+  },
+  {
+    "id": "ENT080",
+    "name": "青岛联合贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "QLHMYJTYXGS"
+  },
+  {
+    "id": "ENT081",
+    "name": "成都市宏图贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSMYYXGS"
+  },
+  {
+    "id": "ENT082",
+    "name": "上海市国联信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SHSLXXKJJTYXGS"
+  },
+  {
+    "id": "ENT083",
+    "name": "成都市珠江物流实业有限公司",
+    "industry_l1": "交通运输",
+    "initials": "CSZWLSYYXGS"
+  },
+  {
+    "id": "ENT084",
+    "name": "广州中汇贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "GZZHMYJTYXGS"
+  },
+  {
+    "id": "ENT085",
+    "name": "东莞东方精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "DGDJMZZGFYXGS"
+  },
+  {
+    "id": "ENT086",
+    "name": "佛山鑫源建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "FSXYJSGCSYYXGS"
+  },
+  {
+    "id": "ENT087",
+    "name": "宁波市黄河物流集团有限公司",
+    "industry_l1": "交通运输",
+    "initials": "NSHWLJTYXGS"
+  },
+  {
+    "id": "ENT088",
+    "name": "郑州市智联精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "ZZSZLJMZZSYYXGS"
+  },
+  {
+    "id": "ENT089",
+    "name": "长沙市南方信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CSNXXKJGFYXGS"
+  },
+  {
+    "id": "ENT090",
+    "name": "西安市西部物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "XASXWLGFYXGS"
+  },
+  {
+    "id": "ENT091",
+    "name": "合肥珠江信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "HZXXKJGFYXGS"
+  },
+  {
+    "id": "ENT092",
+    "name": "北京市南方精密制造集团有限公司",
+    "industry_l1": "制造业",
+    "initials": "BSNJMZZJTYXGS"
+  },
+  {
+    "id": "ENT093",
+    "name": "武汉鑫源新能源实业有限公司",
+    "industry_l1": "新能源",
+    "initials": "WXYXNYSYYXGS"
+  },
+  {
+    "id": "ENT094",
+    "name": "西安德盛新能源集团有限公司",
+    "industry_l1": "新能源",
+    "initials": "XADSXNYJTYXGS"
+  },
+  {
+    "id": "ENT095",
+    "name": "深圳市西部贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "SSXMYGFYXGS"
+  },
+  {
+    "id": "ENT096",
+    "name": "成都市汇通金融服务股份有限公司",
+    "industry_l1": "金融",
+    "initials": "CSHTJRFGFYXGS"
+  },
+  {
+    "id": "ENT097",
+    "name": "广州市博远物流实业有限公司",
+    "industry_l1": "交通运输",
+    "initials": "GZSBYWLSYYXGS"
+  },
+  {
+    "id": "ENT098",
+    "name": "宁波市西部精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "NSXJMZZYXGS"
+  },
+  {
+    "id": "ENT099",
+    "name": "深圳市恒达信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SSHDXXKJJTYXGS"
+  },
+  {
+    "id": "ENT100",
+    "name": "厦门市华创建设工程有限公司",
+    "industry_l1": "建筑业",
+    "initials": "XSHCJSGCYXGS"
+  },
+  {
+    "id": "ENT101",
+    "name": "成都市中汇精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "CSZHJMZZGFYXGS"
+  },
+  {
+    "id": "ENT102",
+    "name": "北京东方建设工程有限公司",
+    "industry_l1": "建筑业",
+    "initials": "BDJSGCYXGS"
+  },
+  {
+    "id": "ENT103",
+    "name": "长沙市德盛信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CSDSXXKJSYYXGS"
+  },
+  {
+    "id": "ENT104",
+    "name": "佛山市天成信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "FSSTCXXKJGFYXGS"
+  },
+  {
+    "id": "ENT105",
+    "name": "成都市国联建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "CSLJSGCGFYXGS"
+  },
+  {
+    "id": "ENT106",
+    "name": "青岛新锐精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "QXJMZZSYYXGS"
+  },
+  {
+    "id": "ENT107",
+    "name": "杭州市国联建设工程有限公司",
+    "industry_l1": "建筑业",
+    "initials": "HZSLJSGCYXGS"
+  },
+  {
+    "id": "ENT108",
+    "name": "苏州市博远信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SZSBYXXKJGFYXGS"
+  },
+  {
+    "id": "ENT109",
+    "name": "武汉市汇通贸易实业有限公司",
+    "industry_l1": "批发零售",
+    "initials": "WSHTMYSYYXGS"
+  },
+  {
+    "id": "ENT110",
+    "name": "厦门市瑞丰物流有限公司",
+    "industry_l1": "交通运输",
+    "initials": "XSFWLYXGS"
+  },
+  {
+    "id": "ENT111",
+    "name": "宁波嘉禾信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "NXXKJJTYXGS"
+  },
+  {
+    "id": "ENT112",
+    "name": "广州天成贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "GZTCMYGFYXGS"
+  },
+  {
+    "id": "ENT113",
+    "name": "成都广汇信息科技有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CGHXXKJYXGS"
+  },
+  {
+    "id": "ENT114",
+    "name": "广州鑫源精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "GZXYJMZZYXGS"
+  },
+  {
+    "id": "ENT115",
+    "name": "北京鑫源金融服务实业有限公司",
+    "industry_l1": "金融",
+    "initials": "BXYJRFSYYXGS"
+  },
+  {
+    "id": "ENT116",
+    "name": "厦门市恒达精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "XSHDJMZZGFYXGS"
+  },
+  {
+    "id": "ENT117",
+    "name": "青岛市珠江医药股份有限公司",
+    "industry_l1": "医药",
+    "initials": "QSZYYGFYXGS"
+  },
+  {
+    "id": "ENT118",
+    "name": "西安德盛物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "XADSWLGFYXGS"
+  },
+  {
+    "id": "ENT119",
+    "name": "北京北方医药实业有限公司",
+    "industry_l1": "医药",
+    "initials": "BBYYSYYXGS"
+  },
+  {
+    "id": "ENT120",
+    "name": "郑州高新贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "ZZXMYGFYXGS"
+  },
+  {
+    "id": "ENT121",
+    "name": "上海市西部金融服务有限公司",
+    "industry_l1": "金融",
+    "initials": "SHSXJRFYXGS"
+  },
+  {
+    "id": "ENT122",
+    "name": "郑州市金鼎新能源有限公司",
+    "industry_l1": "新能源",
+    "initials": "ZZSJXNYYXGS"
+  },
+  {
+    "id": "ENT123",
+    "name": "重庆市新锐贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSXMYJTYXGS"
+  },
+  {
+    "id": "ENT124",
+    "name": "深圳市金鼎贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "SSJMYGFYXGS"
+  },
+  {
+    "id": "ENT125",
+    "name": "苏州市博远建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "SZSBYJSGCGFYXGS"
+  },
+  {
+    "id": "ENT126",
+    "name": "广州市中汇贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "GZSZHMYGFYXGS"
+  },
+  {
+    "id": "ENT127",
+    "name": "武汉市北方物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "WSBWLGFYXGS"
+  },
+  {
+    "id": "ENT128",
+    "name": "深圳市远洋信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "SSYXXKJSYYXGS"
+  },
+  {
+    "id": "ENT129",
+    "name": "青岛市长江建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "QSCJSGCGFYXGS"
+  },
+  {
+    "id": "ENT130",
+    "name": "广州新纪元信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "GZXXXKJGFYXGS"
+  },
+  {
+    "id": "ENT131",
+    "name": "成都市远洋贸易集团有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSYMYJTYXGS"
+  },
+  {
+    "id": "ENT132",
+    "name": "宁波市广汇精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "NSGHJMZZSYYXGS"
+  },
+  {
+    "id": "ENT133",
+    "name": "东莞鑫源贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "DGXYMYGFYXGS"
+  },
+  {
+    "id": "ENT134",
+    "name": "东莞市金鼎金融服务实业有限公司",
+    "industry_l1": "金融",
+    "initials": "DGSJJRFSYYXGS"
+  },
+  {
+    "id": "ENT135",
+    "name": "天津市宏图新能源集团有限公司",
+    "industry_l1": "新能源",
+    "initials": "TSXNYJTYXGS"
+  },
+  {
+    "id": "ENT136",
+    "name": "成都盛泰贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSTMYYXGS"
+  },
+  {
+    "id": "ENT137",
+    "name": "天津市金鼎餐饮管理实业有限公司",
+    "industry_l1": "餐饮",
+    "initials": "TSJCYSYYXGS"
+  },
+  {
+    "id": "ENT138",
+    "name": "成都新纪元建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "CXJSGCSYYXGS"
+  },
+  {
+    "id": "ENT139",
+    "name": "天津市广汇餐饮管理实业有限公司",
+    "industry_l1": "餐饮",
+    "initials": "TSGHCYSYYXGS"
+  },
+  {
+    "id": "ENT140",
+    "name": "东莞市联合医药实业有限公司",
+    "industry_l1": "医药",
+    "initials": "DGSLHYYSYYXGS"
+  },
+  {
+    "id": "ENT141",
+    "name": "长沙鑫源信息科技实业有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CXYXXKJSYYXGS"
+  },
+  {
+    "id": "ENT142",
+    "name": "青岛盛泰餐饮管理股份有限公司",
+    "industry_l1": "餐饮",
+    "initials": "QSTCYGFYXGS"
+  },
+  {
+    "id": "ENT143",
+    "name": "郑州国联精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "ZZLJMZZYXGS"
+  },
+  {
+    "id": "ENT144",
+    "name": "南京市远洋精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "NSYJMZZSYYXGS"
+  },
+  {
+    "id": "ENT145",
+    "name": "厦门珠江餐饮管理有限公司",
+    "industry_l1": "餐饮",
+    "initials": "XZCYYXGS"
+  },
+  {
+    "id": "ENT146",
+    "name": "郑州市长江精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "ZZSCJMZZGFYXGS"
+  },
+  {
+    "id": "ENT147",
+    "name": "佛山市东方医药有限公司",
+    "industry_l1": "医药",
+    "initials": "FSSDYYYXGS"
+  },
+  {
+    "id": "ENT148",
+    "name": "宁波联合物流股份有限公司",
+    "industry_l1": "交通运输",
+    "initials": "NLHWLGFYXGS"
+  },
+  {
+    "id": "ENT149",
+    "name": "重庆滨海建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "CBHJSGCSYYXGS"
+  },
+  {
+    "id": "ENT150",
+    "name": "东莞智联精密制造集团有限公司",
+    "industry_l1": "制造业",
+    "initials": "DGZLJMZZJTYXGS"
+  },
+  {
+    "id": "ENT151",
+    "name": "厦门宏图新能源集团有限公司",
+    "industry_l1": "新能源",
+    "initials": "XXNYJTYXGS"
+  },
+  {
+    "id": "ENT152",
+    "name": "佛山正信建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "FSXJSGCGFYXGS"
+  },
+  {
+    "id": "ENT153",
+    "name": "合肥市广汇餐饮管理有限公司",
+    "industry_l1": "餐饮",
+    "initials": "HSGHCYYXGS"
+  },
+  {
+    "id": "ENT154",
+    "name": "成都市联合信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "CSLHXXKJGFYXGS"
+  },
+  {
+    "id": "ENT155",
+    "name": "成都市北方医药股份有限公司",
+    "industry_l1": "医药",
+    "initials": "CSBYYGFYXGS"
+  },
+  {
+    "id": "ENT156",
+    "name": "上海市智联精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "SHSZLJMZZSYYXGS"
+  },
+  {
+    "id": "ENT157",
+    "name": "广州东方建设工程有限公司",
+    "industry_l1": "建筑业",
+    "initials": "GZDJSGCYXGS"
+  },
+  {
+    "id": "ENT158",
+    "name": "佛山市德盛物流有限公司",
+    "industry_l1": "交通运输",
+    "initials": "FSSDSWLYXGS"
+  },
+  {
+    "id": "ENT159",
+    "name": "佛山市黄河医药实业有限公司",
+    "industry_l1": "医药",
+    "initials": "FSSHYYSYYXGS"
+  },
+  {
+    "id": "ENT160",
+    "name": "佛山市博远信息科技有限公司",
+    "industry_l1": "信息技术",
+    "initials": "FSSBYXXKJYXGS"
+  },
+  {
+    "id": "ENT161",
+    "name": "北京博远信息科技股份有限公司",
+    "industry_l1": "信息技术",
+    "initials": "BBYXXKJGFYXGS"
+  },
+  {
+    "id": "ENT162",
+    "name": "青岛市鑫源精密制造有限公司",
+    "industry_l1": "制造业",
+    "initials": "QSXYJMZZYXGS"
+  },
+  {
+    "id": "ENT163",
+    "name": "长沙市滨海贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CSBHMYYXGS"
+  },
+  {
+    "id": "ENT164",
+    "name": "合肥国联贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "HLMYYXGS"
+  },
+  {
+    "id": "ENT165",
+    "name": "成都金鼎金融服务有限公司",
+    "industry_l1": "金融",
+    "initials": "CJJRFYXGS"
+  },
+  {
+    "id": "ENT166",
+    "name": "北京正信精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "BXJMZZGFYXGS"
+  },
+  {
+    "id": "ENT167",
+    "name": "青岛东方医药股份有限公司",
+    "industry_l1": "医药",
+    "initials": "QDYYGFYXGS"
+  },
+  {
+    "id": "ENT168",
+    "name": "西安市高新精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "XASXJMZZGFYXGS"
+  },
+  {
+    "id": "ENT169",
+    "name": "武汉高新建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "WXJSGCGFYXGS"
+  },
+  {
+    "id": "ENT170",
+    "name": "郑州市博远建设工程有限公司",
+    "industry_l1": "建筑业",
+    "initials": "ZZSBYJSGCYXGS"
+  },
+  {
+    "id": "ENT171",
+    "name": "宁波市南方建设工程实业有限公司",
+    "industry_l1": "建筑业",
+    "initials": "NSNJSGCSYYXGS"
+  },
+  {
+    "id": "ENT172",
+    "name": "长沙南方贸易股份有限公司",
+    "industry_l1": "批发零售",
+    "initials": "CNMYGFYXGS"
+  },
+  {
+    "id": "ENT173",
+    "name": "上海鑫源建设工程股份有限公司",
+    "industry_l1": "建筑业",
+    "initials": "SHXYJSGCGFYXGS"
+  },
+  {
+    "id": "ENT174",
+    "name": "长沙市远洋医药有限公司",
+    "industry_l1": "医药",
+    "initials": "CSYYYYXGS"
+  },
+  {
+    "id": "ENT175",
+    "name": "佛山市远洋医药集团有限公司",
+    "industry_l1": "医药",
+    "initials": "FSSYYYJTYXGS"
+  },
+  {
+    "id": "ENT176",
+    "name": "杭州珠江精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "HZZJMZZSYYXGS"
+  },
+  {
+    "id": "ENT177",
+    "name": "宁波市高新信息科技集团有限公司",
+    "industry_l1": "信息技术",
+    "initials": "NSXXXKJJTYXGS"
+  },
+  {
+    "id": "ENT178",
+    "name": "苏州市新纪元贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "SZSXMYYXGS"
+  },
+  {
+    "id": "ENT179",
+    "name": "深圳市瑞丰餐饮管理股份有限公司",
+    "industry_l1": "餐饮",
+    "initials": "SSFCYGFYXGS"
+  },
+  {
+    "id": "ENT180",
+    "name": "合肥珠江信息科技有限公司",
+    "industry_l1": "信息技术",
+    "initials": "HZXXKJYXGS"
+  },
+  {
+    "id": "ENT181",
+    "name": "成都市正信建设工程实业有限公司",
+    "industry_l1": "非上市",
+    "initials": "CSXJSGCSYYXGS"
+  },
+  {
+    "id": "ENT182",
+    "name": "武汉华创物流集团有限公司",
+    "industry_l1": "非上市",
+    "initials": "WHCWLJTYXGS"
+  },
+  {
+    "id": "ENT183",
+    "name": "东莞南方物流有限公司",
+    "industry_l1": "非上市",
+    "initials": "DGNWLYXGS"
+  },
+  {
+    "id": "ENT184",
+    "name": "宁波市滨海精密制造集团有限公司",
+    "industry_l1": "非上市",
+    "initials": "NSBHJMZZJTYXGS"
+  },
+  {
+    "id": "ENT185",
+    "name": "上海南方物流实业有限公司",
+    "industry_l1": "非上市",
+    "initials": "SHNWLSYYXGS"
+  },
+  {
+    "id": "ENT186",
+    "name": "广州市联合信息科技集团有限公司",
+    "industry_l1": "非上市",
+    "initials": "GZSLHXXKJJTYXGS"
+  },
+  {
+    "id": "ENT187",
+    "name": "天津市高新建设工程股份有限公司",
+    "industry_l1": "非上市",
+    "initials": "TSXJSGCGFYXGS"
+  },
+  {
+    "id": "ENT188",
+    "name": "北京金鼎医药有限公司",
+    "industry_l1": "非上市",
+    "initials": "BJYYYXGS"
+  },
+  {
+    "id": "ENT189",
+    "name": "上海联合信息科技有限公司",
+    "industry_l1": "非上市",
+    "initials": "SHLHXXKJYXGS"
+  },
+  {
+    "id": "ENT190",
+    "name": "杭州国联信息科技实业有限公司",
+    "industry_l1": "非上市",
+    "initials": "HZLXXKJSYYXGS"
+  },
+  {
+    "id": "ENT191",
+    "name": "宁波市远洋物流实业有限公司",
+    "industry_l1": "交通运输",
+    "initials": "NSYWLSYYXGS"
+  },
+  {
+    "id": "ENT192",
+    "name": "厦门东方金融服务股份有限公司",
+    "industry_l1": "金融",
+    "initials": "XDJRFGFYXGS"
+  },
+  {
+    "id": "ENT193",
+    "name": "合肥市长江贸易有限公司",
+    "industry_l1": "批发零售",
+    "initials": "HSCMYYXGS"
+  },
+  {
+    "id": "ENT194",
+    "name": "成都市中汇精密制造集团有限公司",
+    "industry_l1": "制造业",
+    "initials": "CSZHJMZZJTYXGS"
+  },
+  {
+    "id": "ENT195",
+    "name": "南京宏图精密制造集团有限公司",
+    "industry_l1": "制造业",
+    "initials": "NJMZZJTYXGS"
+  },
+  {
+    "id": "ENT196",
+    "name": "天津联合信息科技有限公司",
+    "industry_l1": "信息技术",
+    "initials": "TLHXXKJYXGS"
+  },
+  {
+    "id": "ENT197",
+    "name": "北京市联合精密制造实业有限公司",
+    "industry_l1": "制造业",
+    "initials": "BSLHJMZZSYYXGS"
+  },
+  {
+    "id": "ENT198",
+    "name": "南京市北方新能源实业有限公司",
+    "industry_l1": "新能源",
+    "initials": "NSBXNYSYYXGS"
+  },
+  {
+    "id": "ENT199",
+    "name": "青岛市高新餐饮管理实业有限公司",
+    "industry_l1": "餐饮",
+    "initials": "QSXCYSYYXGS"
+  },
+  {
+    "id": "ENT200",
+    "name": "合肥正信精密制造股份有限公司",
+    "industry_l1": "制造业",
+    "initials": "HXJMZZGFYXGS"
+  }
+]

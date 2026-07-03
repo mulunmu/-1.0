@@ -1,17 +1,21 @@
-# Reference: FinRobot Section 3.2 - FINROBOT_DIMENSIONS 映射至三维评估模型
-# FinRobot 五维: financial_health 0.30, business_quality 0.25, valuation_risk 0.20,
-#               governance_risk 0.15, market_sentiment 0.10
-# 映射规则: tax_health≈governance, authenticity≈business_quality,
-#           finance≈financial_health+valuation_risk+market_sentiment
-# 原权重 tax_health 0.40 / authenticity 0.35 / finance 0.25 与 FinRobot 偏差 >10%，已调整
+# 五维评估权重：税务25 / 经营25 / 行业20 / 法律15 / 财务15
 
 DIMENSION_WEIGHTS: dict[str, float] = {
-    "tax_health": 0.30,
-    "authenticity": 0.30,
-    "finance": 0.40,
+    "tax_health": 0.25,
+    "authenticity": 0.25,
+    "industry": 0.20,
+    "legal": 0.15,
+    "finance": 0.15,
 }
 
-# FinRobot 报告七章结构对照（用于 report_generator 章节校验）
+DIMENSION_LABELS: dict[str, str] = {
+    "tax_health": "税务健康",
+    "authenticity": "经营真实性",
+    "industry": "行业地位",
+    "legal": "法律合规",
+    "finance": "财务健康",
+}
+
 FINROBOT_REPORT_SECTIONS = [
     "Executive Summary",
     "Company Overview",

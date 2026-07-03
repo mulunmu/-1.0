@@ -1,8 +1,9 @@
 import axios, { AxiosError } from "axios";
+import { getToken, removeToken } from "@/lib/auth";
 
 const api = axios.create({
   baseURL: "/api/v1",
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     Accept: "application/json; charset=utf-8",
     "Content-Type": "application/json; charset=utf-8",
@@ -21,11 +22,23 @@ export class ApiError extends Error {
   }
 }
 
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (res) => res,
   (err: AxiosError<{ detail?: string }>) => {
     const status = err.response?.status;
     const detail = err.response?.data?.detail;
+    if (status === 401 && getToken() && !err.config?.url?.includes("/auth/login")) {
+      removeToken();
+      window.location.href = "/login";
+    }
     const message =
       detail ||
       (status === 404 ? "资源不存在" : err.message || "请求失败，请稍后重试");
@@ -36,7 +49,30 @@ api.interceptors.response.use(
 export interface EnterpriseDimensions {
   tax_health: number;
   authenticity: number;
+  industry: number;
+  legal: number;
   finance: number;
+}
+
+export interface AttributionItem {
+  item: string;
+  contribution?: number;
+  deduction?: number;
+  count?: number;
+}
+
+export interface DimensionAttribution {
+  score: number;
+  weight: number;
+  label: string;
+  positive: AttributionItem[];
+  negative: AttributionItem[];
+  net_contribution: number;
+}
+
+export interface EnterpriseAttribution {
+  dimensions: Record<string, DimensionAttribution>;
+  summary: string;
 }
 
 export interface EnterpriseAssessment {
@@ -47,15 +83,41 @@ export interface EnterpriseAssessment {
   invoice_monthly_avg: number;
   revenue_deviation: number;
   social_trend: string;
+  industry_l1?: string;
+  industry_l2?: string;
+  province?: string;
+  city?: string;
   overall_score: number;
   risk_level: string;
   dimensions: EnterpriseDimensions;
   dimension_details: Record<string, unknown>;
+  attribution?: EnterpriseAttribution;
   warning_signals: string[];
+  /** 搜索用拼音首字母（registry 注入或前端计算） */
+  initials?: string;
 }
 
-export async function healthCheck(): Promise<{ status: string }> {
-  const { data } = await api.get<{ status: string }>("/health");
+export interface LegalEventItem {
+  id: number;
+  enterprise_id: string;
+  event_type: string;
+  severity: string;
+  amount_involved: number;
+  event_date: string | null;
+  description: string;
+  source: string;
+}
+
+export interface HealthResponse {
+  status: string;
+  database?: string;
+  enterprise_count?: number;
+  llm_configured?: boolean;
+  mock_data?: boolean;
+}
+
+export async function healthCheck(): Promise<HealthResponse> {
+  const { data } = await api.get<HealthResponse>("/health");
   return data;
 }
 
@@ -71,6 +133,24 @@ export async function getEnterprisePK(ids: string[]): Promise<EnterpriseAssessme
   return data;
 }
 
+export async function getAllEnterprises(): Promise<EnterpriseAssessment[]> {
+  const { data } = await api.get<EnterpriseAssessment[]>("/enterprise/list");
+  return data;
+}
+
+export interface InvoiceEdge {
+  source_id: string;
+  target_id: string;
+  amount: number;
+  invoice_type?: string;
+  invoice_date?: string;
+}
+
+export async function getInvoiceEdges(): Promise<InvoiceEdge[]> {
+  const { data } = await api.get<InvoiceEdge[]>("/network/invoice-edges");
+  return data;
+}
+
 export interface RiskWarningItem {
   enterprise_id: string;
   enterprise_name: string;
@@ -79,15 +159,13 @@ export interface RiskWarningItem {
   warning_signals: string[];
 }
 
-export async function getAllEnterprises(): Promise<EnterpriseAssessment[]> {
-  return getEnterprisePK([
-    "ENT001", "ENT002", "ENT003", "ENT004", "ENT005",
-    "ENT006", "ENT007", "ENT008", "ENT009", "ENT010",
-  ]);
-}
-
 export async function getRiskWarnings(): Promise<RiskWarningItem[]> {
   const { data } = await api.get<RiskWarningItem[]>("/risk/warnings");
+  return data;
+}
+
+export async function getLegalEvents(enterpriseId: string): Promise<LegalEventItem[]> {
+  const { data } = await api.get<LegalEventItem[]>(`/enterprise/${enterpriseId}/legal-events`);
   return data;
 }
 

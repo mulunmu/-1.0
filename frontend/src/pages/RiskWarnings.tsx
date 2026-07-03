@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { EmptyBlock, ErrorBlock, LoadingBlock } from "@/components/StateViews";
+import WarningSignalBadge from "@/components/WarningSignalBadge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getRiskWarnings, type RiskWarningItem } from "@/lib/api";
 import {
   RISK_LEVEL_COLORS,
   RISK_LEVEL_FILTER_OPTIONS,
   RISK_LEVEL_TEXT,
-  WARNING_SIGNAL_LABELS,
-  WARNING_SEVERITY_STYLES,
 } from "@/lib/labels";
+import { cn } from "@/lib/utils";
+
+const FILTER_CHIP_COLORS: Record<string, string> = {
+  全部: "border-white/15 text-neutral-300 bg-white/[0.06]",
+  高风险: "border-red-500/40 text-red-300 bg-red-500/10",
+  中高风险: "border-red-400/30 text-red-400 bg-red-500/10",
+  中等风险: "border-amber-500/35 text-amber-400 bg-amber-500/10",
+  中低风险: "border-blue-400/30 text-blue-400 bg-blue-500/10",
+  低风险: "border-emerald-400/30 text-emerald-400 bg-emerald-500/8",
+};
 
 export default function RiskWarnings() {
   const navigate = useNavigate();
@@ -33,9 +40,7 @@ export default function RiskWarnings() {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() => {
     if (filter === "全部") return items;
@@ -43,109 +48,101 @@ export default function RiskWarnings() {
   }, [items, filter]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">
-          <Link to="/">
-            <ArrowLeft className="h-4 w-4" />
-            返回首页
-          </Link>
-        </Button>
+    <div className="w-full space-y-4 fade-in pb-6">
+      <div className="flex flex-wrap gap-1.5">
+        {RISK_LEVEL_FILTER_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setFilter(opt.value)}
+            className={cn(
+              "rounded-lg border px-2.5 py-1 text-xs transition-colors",
+              filter === opt.value
+                ? "border-white/25 bg-white/[0.1] text-white"
+                : FILTER_CHIP_COLORS[opt.value] ?? "border-white/10 text-neutral-400 bg-white/[0.03] hover:bg-white/[0.06] hover:text-neutral-200",
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">风险预警清单</h1>
-            <p className="mt-1 text-sm text-slate-400">展示所有触发预警信号的企业</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="risk-filter" className="text-sm text-slate-400">
-              风险等级
-            </label>
-            <select
-              id="risk-filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="h-9 rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {RISK_LEVEL_FILTER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      {loading && <LoadingBlock />}
+      {!loading && error && <ErrorBlock message={error} onRetry={load} />}
+      {!loading && !error && filtered.length === 0 && (
+        <EmptyBlock message={filter === "全部" ? "当前无预警企业" : `暂无「${filter}」级别的预警企业`} />
+      )}
 
-        {loading && <LoadingBlock />}
-        {!loading && error && <ErrorBlock message={error} onRetry={load} />}
-        {!loading && !error && filtered.length === 0 && (
-          <EmptyBlock
-            message={filter === "全部" ? "当前无预警企业" : `暂无「${filter}」级别的预警企业`}
-          />
-        )}
-
-        {!loading && !error && filtered.length > 0 && (
-          <Card className="border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-base">
-                共 {filtered.length} 家企业存在预警
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="overflow-x-auto p-0 sm:p-0">
-              <table className="w-full text-sm">
+      {!loading && !error && filtered.length > 0 && (
+        <Card className="glass">
+          <CardContent className="p-0 sm:p-0">
+            {/* 桌面端表格 */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full table-fixed text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-slate-500">
-                    <th className="px-5 py-3 font-medium">企业名称</th>
-                    <th className="px-5 py-3 font-medium">风险等级</th>
-                    <th className="px-5 py-3 font-medium">综合分</th>
-                    <th className="px-5 py-3 font-medium">触发信号</th>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.02] text-left text-neutral-500">
+                    <th className="w-[28%] px-5 py-3 font-medium">企业名称</th>
+                    <th className="w-[12%] px-5 py-3 font-medium">风险等级</th>
+                    <th className="w-[10%] px-5 py-3 font-medium">综合分</th>
+                    <th className="w-[50%] px-5 py-3 font-medium">触发信号</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((item) => (
                     <tr
                       key={item.enterprise_id}
-                      className="cursor-pointer border-b border-slate-800/60 transition-colors hover:bg-slate-800/40"
+                      className="cursor-pointer border-b border-white/[0.04] transition-colors hover:bg-white/[0.03]"
                       onClick={() => navigate(`/enterprise/${item.enterprise_id}`)}
                     >
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-slate-200">{item.enterprise_name}</p>
-                        <p className="text-xs text-slate-500">{item.enterprise_id}</p>
+                      <td className="px-5 py-4 align-top">
+                        <p className="font-medium text-neutral-200 break-words">{item.enterprise_name}</p>
+                        <p className="text-xs text-neutral-600 mt-0.5">{item.enterprise_id}</p>
                       </td>
-                      <td className="px-5 py-4">
-                        <Badge className={RISK_LEVEL_COLORS[item.risk_level] ?? RISK_LEVEL_COLORS["高风险"]}>
-                          {item.risk_level}
-                        </Badge>
+                      <td className="px-5 py-4 align-top">
+                        <Badge className={cn("shrink-0", RISK_LEVEL_COLORS[item.risk_level] ?? RISK_LEVEL_COLORS["高风险"])}>{item.risk_level}</Badge>
                       </td>
-                      <td className={`px-5 py-4 font-bold tabular-nums ${RISK_LEVEL_TEXT[item.risk_level] ?? ""}`}>
-                        {item.overall_score.toFixed(1)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          {item.warning_signals.map((signal) => {
-                            const meta = WARNING_SIGNAL_LABELS[signal] ?? {
-                              label: signal,
-                              severity: "yellow" as const,
-                            };
-                            return (
-                              <Badge
-                                key={signal}
-                                className={`text-xs font-normal ${WARNING_SEVERITY_STYLES[meta.severity]}`}
-                              >
-                                {meta.label}
-                              </Badge>
-                            );
-                          })}
+                      <td className={`px-5 py-4 align-top font-bold tabular-nums ${RISK_LEVEL_TEXT[item.risk_level] ?? ""}`}>{item.overall_score.toFixed(1)}</td>
+                      <td className="px-5 py-4 align-top max-w-0">
+                        <div className="flex flex-wrap items-start gap-1.5">
+                          {item.warning_signals.map((signal) => (
+                            <WarningSignalBadge key={signal} signal={signal} />
+                          ))}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </div>
+
+            {/* 移动端卡片列表 */}
+            <div className="md:hidden divide-y divide-white/[0.06]">
+              {filtered.map((item) => (
+                <button
+                  key={item.enterprise_id}
+                  type="button"
+                  className="w-full text-left px-4 py-4 hover:bg-white/[0.03] transition-colors"
+                  onClick={() => navigate(`/enterprise/${item.enterprise_id}`)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-neutral-200 truncate">{item.enterprise_name}</p>
+                      <p className="text-xs text-neutral-600 mt-0.5">{item.enterprise_id}</p>
+                    </div>
+                    <Badge className={RISK_LEVEL_COLORS[item.risk_level] ?? RISK_LEVEL_COLORS["高风险"]}>{item.risk_level}</Badge>
+                  </div>
+                  <p className={`text-xl font-bold tabular-nums mt-2 ${RISK_LEVEL_TEXT[item.risk_level] ?? ""}`}>{item.overall_score.toFixed(1)}</p>
+                  <div className="flex flex-wrap items-start gap-1.5 mt-3">
+                    {item.warning_signals.map((signal) => (
+                      <WarningSignalBadge key={signal} signal={signal} />
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

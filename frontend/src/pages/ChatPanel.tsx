@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Markdown from "react-markdown";
-import { ArrowLeft, Bot, Loader2, Send, User } from "lucide-react";
+import { Send, User, BarChart3, GitCompare, AlertTriangle, ShieldCheck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import ChatInlineChart from "@/components/ChatInlineChart";
+import LineSigil from "@/components/LineSigil";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { sendChat, type ChatResponse } from "@/lib/api";
@@ -15,29 +17,32 @@ interface Message {
   response?: ChatResponse;
 }
 
-const SUGGESTIONS = [
-  "分析深圳明达科技的税务健康",
-  "样本企业行业排名",
-  "对比深圳明达和上海恒信",
-  "有哪些风险预警",
+const QUICK_ACTIONS: { label: string; query: string; Icon: LucideIcon }[] = [
+  { label: "税务健康", query: "分析深圳明达科技的税务健康", Icon: ShieldCheck },
+  { label: "行业排名", query: "样本企业行业排名", Icon: BarChart3 },
+  { label: "企业对比", query: "对比深圳明达和上海恒信", Icon: GitCompare },
+  { label: "风险预警", query: "有哪些风险预警", Icon: AlertTriangle },
 ];
 
-const SESSION_NOTE_KEY = "risk-chat-session-note-shown";
+const BOILERPLATE_REPLY = "暂无文字回复，请查看下方图表与数据详情。";
+
+function shouldShowText(content: string, hasChart: boolean): boolean {
+  if (!content.trim()) return false;
+  if (hasChart && (content === BOILERPLATE_REPLY || content.length < 30)) return false;
+  return true;
+}
 
 export default function ChatPanel() {
   const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionNote, setSessionNote] = useState<string | null>(null);
   const [sessionId] = useState(() => crypto.randomUUID());
   const listRef = useRef<HTMLDivElement>(null);
   const initialQuery = searchParams.get("q");
 
   useEffect(() => {
-    if (initialQuery && messages.length === 0) {
-      setInput(initialQuery);
-    }
+    if (initialQuery && messages.length === 0) setInput(initialQuery);
   }, [initialQuery, messages.length]);
 
   useEffect(() => {
@@ -48,73 +53,44 @@ export default function ChatPanel() {
     const query = (text ?? input).trim();
     if (!query || loading) return;
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: query };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: query }]);
     setInput("");
     setLoading(true);
 
     try {
       const res = await sendChat(query, sessionId);
-      if (res.session_note && !localStorage.getItem(SESSION_NOTE_KEY)) {
-        setSessionNote(res.session_note);
-        localStorage.setItem(SESSION_NOTE_KEY, "1");
-      }
-      const replyText = res.reply?.trim() || "暂无文字回复，请查看下方图表与数据详情。";
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: replyText, response: res },
-      ]);
+      const replyText = res.reply?.trim() || BOILERPLATE_REPLY;
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: replyText, response: res }]);
     } catch (e) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: e instanceof Error ? e.message : "请求失败，请重试",
-        },
-      ]);
+      setMessages((prev) => [...prev, {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: e instanceof Error ? e.message : "请求失败",
+      }]);
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild className="-ml-2">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4" />
-              返回
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-lg font-bold">AI 分析助手</h1>
-            <p className="text-xs text-slate-500">自然语言提问，自动路由分析模块</p>
-          </div>
-        </div>
-        <Bot className="h-6 w-6 text-blue-400" />
-      </header>
+  const isEmpty = messages.length === 0 && !loading;
 
-      <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-        {sessionNote && (
-          <div className="mx-auto mb-4 max-w-2xl rounded-lg border border-amber-700/40 bg-amber-950/30 px-4 py-2 text-xs text-amber-200/90">
-            {sessionNote}
-          </div>
-        )}
-        {messages.length === 0 && (
-          <div className="mx-auto max-w-2xl text-center">
-            <Bot className="mx-auto mb-4 h-12 w-12 text-blue-400/60" />
-            <p className="mb-6 text-slate-400">试试这些问题：</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((s) => (
+  return (
+    <div className="flex flex-col flex-1 min-h-0 h-full bg-transparent">
+      <div ref={listRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0 bg-transparent">
+        {isEmpty && (
+          <div className="flex flex-col items-center justify-center min-h-full py-8">
+            <LineSigil mode="idle" size={48} className="mb-8 opacity-90" />
+            <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+              {QUICK_ACTIONS.map(({ label, query, Icon }) => (
                 <button
-                  key={s}
+                  key={label}
                   type="button"
-                  onClick={() => handleSend(s)}
-                  className="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:border-blue-500/50 hover:bg-slate-800"
+                  onClick={() => handleSend(query)}
+                  disabled={loading}
+                  className="glass-card flex flex-col items-center gap-2.5 rounded-2xl px-4 py-5 transition-transform hover:scale-[1.02] disabled:opacity-50"
                 >
-                  {s}
+                  <Icon size={22} className="text-neutral-400" strokeWidth={1.5} />
+                  <span className="text-sm text-neutral-300">{label}</span>
                 </button>
               ))}
             </div>
@@ -122,76 +98,85 @@ export default function ChatPanel() {
         )}
 
         <div className="mx-auto max-w-2xl space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={cn("flex gap-3", msg.role === "user" ? "flex-row-reverse" : "flex-row")}
-            >
+          {messages.map((msg) => {
+            const hasChart = Boolean(msg.response?.charts);
+            const showText = msg.role === "assistant"
+              ? shouldShowText(msg.content, hasChart)
+              : true;
+
+            return (
               <div
-                className={cn(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                  msg.role === "user" ? "bg-blue-600" : "bg-slate-700",
-                )}
+                key={msg.id}
+                className={cn("flex gap-2 sm:gap-3", msg.role === "user" ? "flex-row-reverse" : "flex-row")}
               >
-                {msg.role === "user" ? (
-                  <User className="h-4 w-4" />
-                ) : (
-                  <Bot className="h-4 w-4 text-blue-400" />
-                )}
+                <div
+                  className={cn(
+                    "flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05]",
+                    msg.role === "user" && "text-neutral-400",
+                  )}
+                >
+                  {msg.role === "user"
+                    ? <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    : <LineSigil mode="idle" size={28} />}
+                </div>
+                <div
+                  className={cn(
+                    "max-w-[88%] sm:max-w-[85%] rounded-2xl min-w-0 overflow-hidden text-sm",
+                    msg.role === "user"
+                      ? "border border-white/12 bg-white/[0.06] text-neutral-200 backdrop-blur-sm"
+                      : "border border-white/10 bg-white/[0.03] text-neutral-200",
+                    hasChart && msg.role === "assistant" && "w-full max-w-full sm:max-w-[92%]",
+                  )}
+                >
+                  {hasChart && msg.response?.charts && (
+                    <div className="p-3 sm:p-4">
+                      <ChatInlineChart charts={msg.response.charts} />
+                    </div>
+                  )}
+                  {showText && (
+                    <div className={cn(
+                      "text-sm break-words",
+                      hasChart ? "px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-white/[0.06]" : "px-3 sm:px-4 py-2.5 sm:py-3",
+                    )}>
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-strong:text-neutral-100">
+                          <Markdown>{msg.content}</Markdown>
+                        </div>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div
-                className={cn(
-                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm",
-                  msg.role === "user"
-                    ? "bg-blue-600 text-white"
-                    : "border border-slate-700 bg-card text-slate-200",
-                )}
-              >
-                {msg.role === "assistant" ? (
-                  <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-strong:text-slate-100">
-                    <Markdown>{msg.content}</Markdown>
-                  </div>
-                ) : (
-                  msg.content
-                )}
-                {msg.response?.charts && (
-                  <div className="mt-3 border-t border-slate-700 pt-3">
-                    <ChatInlineChart charts={msg.response.charts} />
-                  </div>
-                )}
-                {msg.response?.intent && (
-                  <p className="mt-2 text-xs text-slate-500">意图：{msg.response.intent}</p>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {loading && (
-            <div className="flex gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700">
-                <Bot className="h-4 w-4 text-blue-400" />
-              </div>
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-card px-4 py-3 text-sm text-slate-400">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                分析中...
-              </div>
+            <div className="flex justify-center py-6">
+              <LineSigil mode="thinking" size={40} />
             </div>
           )}
         </div>
       </div>
 
-      <div className="border-t border-slate-800 px-4 py-4 sm:px-6">
+      <div className="border-t border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4 shrink-0 bg-transparent">
         <div className="mx-auto flex max-w-2xl gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="输入问题，如：分析深圳明达科技的税务健康"
+            placeholder="输入分析问题…"
             disabled={loading}
-            className="flex-1"
+            className="flex-1 min-w-0 h-11 bg-white/[0.04] border-white/10 focus:border-white/20"
           />
-          <Button onClick={() => handleSend()} disabled={loading || !input.trim()}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          <Button
+            onClick={() => handleSend()}
+            disabled={loading || !input.trim()}
+            className="shrink-0 h-11 w-11 p-0 border border-white/15 bg-white/[0.08] text-neutral-200 hover:bg-white/[0.12] hover:text-white"
+            aria-label="发送"
+          >
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>

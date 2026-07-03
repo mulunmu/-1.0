@@ -12,3 +12,5 @@ yagmail
 email-validator
 litellm
 networkx
+python-jose[cryptography]
+bcrypt

@@ -2,16 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --space-deep: #161616;
+  --mono-fg: #f5f5f5;
+  --mono-muted: #737373;
+  --mono-border: rgba(255, 255, 255, 0.1);
+}
+
 @layer base {
-  :root {
-    --background: #0a0e17;
-    --foreground: #e2e8f0;
-    --card: #111827;
-    --card-foreground: #e2e8f0;
+  * { box-sizing: border-box; }
+  html, body, #root {
+    background: #161616;
+  }
+  body {
+    margin: 0;
+    color: #f5f5f5;
+    font-family: "Inter", "PingFang SC", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .glass:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.14);
   }
 
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    transition: all 0.25s ease;
+  }
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-panel {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+  }
+
+  .glass-premium {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 24px 80px rgba(0, 0, 0, 0.8),
+      0 0 60px rgba(255, 255, 255, 0.02);
+  }
+
+  /* 登录卡片 — 单层边框，避免 blur + 大阴影造成矩形重影 */
+  .glass-login {
+    background: rgba(18, 18, 18, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .mono-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+
+  .fade-in { animation: fadeIn 0.6s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }

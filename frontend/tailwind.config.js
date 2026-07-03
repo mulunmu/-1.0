@@ -8,7 +8,7 @@ export default {
         background: "#0a0e17",
         foreground: "#e2e8f0",
         card: {
-          DEFAULT: "#111827",
+          DEFAULT: "transparent",
           foreground: "#e2e8f0",
         },
       },

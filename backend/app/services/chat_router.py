@@ -23,11 +23,15 @@ def _radar_chart(ent: dict) -> dict:
             "indicators": [
                 {"name": "税务健康", "max": 100},
                 {"name": "经营真实性", "max": 100},
-                {"name": "行业财务", "max": 100},
+                {"name": "行业地位", "max": 100},
+                {"name": "法律合规", "max": 100},
+                {"name": "财务健康", "max": 100},
             ],
             "values": [
                 dims.get("tax_health", 0),
                 dims.get("authenticity", 0),
+                dims.get("industry", 0),
+                dims.get("legal", 0),
                 dims.get("finance", 0),
             ],
             "name": ent.get("enterprise_name", ""),
@@ -167,7 +171,9 @@ async def route_chat(
                     "series": [
                         {"name": "税务健康", "values": [c["dimensions"]["tax_health"] for c in comparison]},
                         {"name": "经营真实性", "values": [c["dimensions"]["authenticity"] for c in comparison]},
-                        {"name": "行业财务", "values": [c["dimensions"]["finance"] for c in comparison]},
+                        {"name": "行业地位", "values": [c["dimensions"]["industry"] for c in comparison]},
+                        {"name": "法律合规", "values": [c["dimensions"]["legal"] for c in comparison]},
+                        {"name": "财务健康", "values": [c["dimensions"]["finance"] for c in comparison]},
                     ],
                 },
             }
@@ -249,6 +255,8 @@ async def route_chat(
                     "risk_level": ent["risk_level"],
                     "tax_health": ent["dimensions"]["tax_health"],
                     "authenticity": ent["dimensions"]["authenticity"],
+                    "industry": ent["dimensions"]["industry"],
+                    "legal": ent["dimensions"]["legal"],
                     "finance": ent["dimensions"]["finance"],
                 }
             }

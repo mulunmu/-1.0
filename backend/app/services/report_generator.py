@@ -30,6 +30,8 @@ WARNING_LABELS: dict[str, tuple[str, str]] = {
     "credit_level_risk": ("信用等级 C/D/M", "red"),
     "social_trend_shrink": ("社保参保趋势缩减", "yellow"),
     "revenue_deviation_high": ("营收偏差超过 30%", "red"),
+    "legal_compliance_risk": ("法律合规风险", "red"),
+    "legal_enforcement_risk": ("失信/被执行", "red"),
 }
 
 RISK_STYLE: dict[str, tuple[str, str]] = {
@@ -51,7 +53,9 @@ RISK_TIPS: dict[str, str] = {
 DIMENSION_META = [
     ("tax_health", "税务健康", f"{int(DIMENSION_WEIGHTS['tax_health'] * 100)}%"),
     ("authenticity", "经营真实性", f"{int(DIMENSION_WEIGHTS['authenticity'] * 100)}%"),
-    ("finance", "行业财务", f"{int(DIMENSION_WEIGHTS['finance'] * 100)}%"),
+    ("industry", "行业地位", f"{int(DIMENSION_WEIGHTS['industry'] * 100)}%"),
+    ("legal", "法律合规", f"{int(DIMENSION_WEIGHTS['legal'] * 100)}%"),
+    ("finance", "财务健康", f"{int(DIMENSION_WEIGHTS['finance'] * 100)}%"),
 ]
 
 
@@ -143,6 +147,8 @@ async def _load_context(db: AsyncSession, enterprise_id: str) -> dict:
     industry_avg = {
         "tax_health": sum(s["dimensions"]["tax_health"] for s in all_scores) / n,
         "authenticity": sum(s["dimensions"]["authenticity"] for s in all_scores) / n,
+        "industry": sum(s["dimensions"]["industry"] for s in all_scores) / n,
+        "legal": sum(s["dimensions"]["legal"] for s in all_scores) / n,
         "finance": sum(s["dimensions"]["finance"] for s in all_scores) / n,
     }
     industry_overall = sum(s["overall_score"] for s in all_scores) / n

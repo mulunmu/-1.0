@@ -21,6 +21,8 @@ WARNING_LABELS = {
     "credit_level_risk": "信用等级风险",
     "social_trend_shrink": "社保趋势缩减",
     "revenue_deviation_high": "营收偏差过高",
+    "legal_compliance_risk": "法律合规风险",
+    "legal_enforcement_risk": "失信/被执行",
 }
 
 
@@ -130,6 +132,8 @@ def _template_reply(intent: str, data: dict, with_prefix: bool = True) -> str:
             f"风险等级{e.get('risk_level')}。"
             f"税务{e.get('tax_health', '-')}、"
             f"真实性{e.get('authenticity', '-')}、"
+            f"行业{e.get('industry', '-')}、"
+            f"法律{e.get('legal', '-')}、"
             f"财务{e.get('finance', '-')}。"
             f"可继续提问税务、预警或对比分析。"
         )[:120]

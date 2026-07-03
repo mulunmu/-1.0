@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select, text
 
+from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
 from app.api.v1.enterprise import router as enterprise_router
 from app.api.v1.graph import router as graph_router
+from app.api.v1.network import router as network_router
 from app.api.v1.report import router as report_router
 from app.api.v1.risk import router as risk_router
 from app.db.session import AsyncSessionLocal
@@ -23,11 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(enterprise_router, prefix="/api/v1")
 app.include_router(risk_router, prefix="/api/v1")
 app.include_router(report_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(graph_router, prefix="/api/v1")
+app.include_router(network_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")

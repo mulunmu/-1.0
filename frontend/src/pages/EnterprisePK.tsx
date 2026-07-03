@@ -1,25 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as echarts from "echarts";
-import { ArrowLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 import SearchBox from "@/components/SearchBox";
 import { EmptyBlock, ErrorBlock, LoadingBlock } from "@/components/StateViews";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getAllEnterprises,
-  getEnterprisePK,
-  type EnterpriseAssessment,
-} from "@/lib/api";
-import {
-  DIMENSION_LABELS,
-  RISK_LEVEL_COLORS,
-  RISK_LEVEL_TEXT,
-} from "@/lib/labels";
+import { Card, CardContent } from "@/components/ui/card";
+import { getAllEnterprises, getEnterprisePK, type EnterpriseAssessment } from "@/lib/api";
+import { DIMENSION_LABELS, RISK_LEVEL_COLORS, RISK_LEVEL_TEXT } from "@/lib/labels";
+import { CHART_THEME } from "@/lib/theme";
 
 const MAX_PK = 5;
-const DIM_KEYS = ["tax_health", "authenticity", "finance"] as const;
+const DIM_KEYS_PK = ["tax_health", "authenticity", "industry", "legal", "finance"] as const;
 
 function BarChart({ data }: { data: EnterpriseAssessment[] }) {
   const chartRef = useRef<HTMLDivElement>(null);
@@ -33,37 +25,33 @@ function BarChart({ data }: { data: EnterpriseAssessment[] }) {
 
     chart.setOption({
       backgroundColor: "transparent",
-      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-      legend: {
-        data: Object.values(DIMENSION_LABELS),
-        textStyle: { color: "#94a3b8" },
-        top: 0,
-      },
-      grid: { left: 48, right: 16, bottom: 48, top: 40, containLabel: true },
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...CHART_THEME.tooltip },
+      legend: { data: Object.values(DIMENSION_LABELS), textStyle: { color: CHART_THEME.axisLabel }, top: 0 },
+      grid: { left: 40, right: 12, bottom: 48, top: 40, containLabel: true },
       xAxis: {
         type: "category",
         data: names,
         axisLabel: {
-          color: "#94a3b8",
+          color: CHART_THEME.axisLabel,
           interval: 0,
-          rotate: names.length > 3 ? 20 : 0,
-          formatter: (v: string) => (v.length > 8 ? `${v.slice(0, 8)}…` : v),
+          rotate: names.length > 2 ? 25 : 0,
+          formatter: (v: string) => (v.length > 6 ? `${v.slice(0, 6)}…` : v),
         },
-        axisLine: { lineStyle: { color: "#334155" } },
+        axisLine: { lineStyle: { color: CHART_THEME.axisLine } },
       },
       yAxis: {
         type: "value",
         max: 100,
-        axisLabel: { color: "#94a3b8" },
-        splitLine: { lineStyle: { color: "#1e293b" } },
+        axisLabel: { color: CHART_THEME.axisLabel },
+        splitLine: { lineStyle: { color: CHART_THEME.splitLine } },
       },
-      series: DIM_KEYS.map((key, i) => ({
+      series: DIM_KEYS_PK.map((key, i) => ({
         name: DIMENSION_LABELS[key],
         type: "bar",
         barGap: 0,
         data: data.map((d) => d.dimensions[key]),
         itemStyle: {
-          color: ["#3b82f6", "#8b5cf6", "#10b981"][i],
+          color: CHART_THEME.dimensionBars[i],
           borderRadius: [4, 4, 0, 0],
         },
       })),
@@ -74,18 +62,9 @@ function BarChart({ data }: { data: EnterpriseAssessment[] }) {
     return () => window.removeEventListener("resize", onResize);
   }, [data]);
 
-  useEffect(() => {
-    instanceRef.current?.resize();
-  }, [data]);
+  useEffect(() => () => { instanceRef.current?.dispose(); instanceRef.current = null; }, []);
 
-  useEffect(() => {
-    return () => {
-      instanceRef.current?.dispose();
-      instanceRef.current = null;
-    };
-  }, []);
-
-  return <div ref={chartRef} className="h-80 w-full" />;
+  return <div ref={chartRef} className="h-64 sm:h-80 w-full min-w-0" />;
 }
 
 function HeatmapChart({ data }: { data: EnterpriseAssessment[] }) {
@@ -96,67 +75,52 @@ function HeatmapChart({ data }: { data: EnterpriseAssessment[] }) {
     if (!chartRef.current || data.length === 0) return;
     instanceRef.current ??= echarts.init(chartRef.current, undefined, { renderer: "canvas" });
     const chart = instanceRef.current;
-
     const xLabels = data.map((d) => d.enterprise_name);
-    const yLabels = DIM_KEYS.map((k) => DIMENSION_LABELS[k]);
+    const yLabels = DIM_KEYS_PK.map((k) => DIMENSION_LABELS[k]);
     const heatData: [number, number, number][] = [];
-    DIM_KEYS.forEach((key, yi) => {
-      data.forEach((d, xi) => {
-        heatData.push([xi, yi, d.dimensions[key]]);
-      });
+    DIM_KEYS_PK.forEach((key, yi) => {
+      data.forEach((d, xi) => heatData.push([xi, yi, d.dimensions[key]]));
     });
 
     chart.setOption({
       backgroundColor: "transparent",
       tooltip: {
         position: "top",
+        ...CHART_THEME.tooltip,
         formatter: (p: { data: [number, number, number] }) => {
           const [xi, yi, val] = p.data;
           return `${xLabels[xi]}<br/>${yLabels[yi]}: <b>${val.toFixed(1)}</b>`;
         },
       },
-      grid: { left: 80, right: 60, bottom: 48, top: 16, containLabel: true },
+      grid: { left: 72, right: 48, bottom: 48, top: 16, containLabel: true },
       xAxis: {
         type: "category",
         data: xLabels,
         axisLabel: {
-          color: "#94a3b8",
+          color: CHART_THEME.axisLabel,
           interval: 0,
-          rotate: xLabels.length > 3 ? 20 : 0,
-          formatter: (v: string) => (v.length > 8 ? `${v.slice(0, 8)}…` : v),
+          rotate: xLabels.length > 2 ? 25 : 0,
+          formatter: (v: string) => (v.length > 6 ? `${v.slice(0, 6)}…` : v),
         },
         splitArea: { show: true },
       },
       yAxis: {
         type: "category",
         data: yLabels,
-        axisLabel: { color: "#94a3b8" },
+        axisLabel: { color: CHART_THEME.axisLabel },
         splitArea: { show: true },
       },
       visualMap: {
-        min: 0,
-        max: 100,
-        calculable: true,
-        orient: "vertical",
-        right: 0,
-        top: "center",
-        inRange: { color: ["#1e3a5f", "#3b82f6", "#60a5fa", "#93c5fd"] },
-        textStyle: { color: "#94a3b8" },
+        min: 0, max: 100, calculable: true, orient: "horizontal",
+        left: "center", bottom: 0,
+        inRange: { color: CHART_THEME.heatmap },
+        textStyle: { color: CHART_THEME.axisLabel },
       },
-      series: [
-        {
-          type: "heatmap",
-          data: heatData,
-          label: {
-            show: true,
-            color: "#e2e8f0",
-            formatter: (p: { data: [number, number, number] }) => p.data[2].toFixed(0),
-          },
-          emphasis: {
-            itemStyle: { shadowBlur: 10, shadowColor: "rgba(0,0,0,0.4)" },
-          },
-        },
-      ],
+      series: [{
+        type: "heatmap",
+        data: heatData,
+        label: { show: true, color: "#e2e8f0", formatter: (p: { data: [number, number, number] }) => p.data[2].toFixed(0) },
+      }],
     });
 
     const onResize = () => chart.resize();
@@ -164,18 +128,9 @@ function HeatmapChart({ data }: { data: EnterpriseAssessment[] }) {
     return () => window.removeEventListener("resize", onResize);
   }, [data]);
 
-  useEffect(() => {
-    instanceRef.current?.resize();
-  }, [data]);
+  useEffect(() => () => { instanceRef.current?.dispose(); instanceRef.current = null; }, []);
 
-  useEffect(() => {
-    return () => {
-      instanceRef.current?.dispose();
-      instanceRef.current = null;
-    };
-  }, []);
-
-  return <div ref={chartRef} className="h-64 w-full" />;
+  return <div ref={chartRef} className="h-56 sm:h-64 w-full min-w-0" />;
 }
 
 export default function EnterprisePK() {
@@ -193,32 +148,20 @@ export default function EnterprisePK() {
   const setSelectedIds = useCallback(
     (ids: string[]) => {
       const next = ids.slice(0, MAX_PK);
-      if (next.length === 0) {
-        setSearchParams({});
-      } else {
-        setSearchParams({ ids: next.join(",") });
-      }
+      setSearchParams(next.length === 0 ? {} : { ids: next.join(",") });
     },
     [setSearchParams],
   );
 
   const loadCatalog = useCallback(async () => {
-    try {
-      setAllEnterprises(await getAllEnterprises());
-    } catch {
-      /* catalog optional for tags */
-    }
+    try { setAllEnterprises(await getAllEnterprises()); } catch { /* optional */ }
   }, []);
 
   const loadPk = useCallback(async () => {
     if (selectedIds.length === 0) {
-      setPkData([]);
-      setLoading(false);
-      setError(null);
-      return;
+      setPkData([]); setLoading(false); setError(null); return;
     }
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       const data = await getEnterprisePK(selectedIds);
       setPkData(data.sort((a, b) => b.overall_score - a.overall_score));
@@ -230,22 +173,8 @@ export default function EnterprisePK() {
     }
   }, [selectedIds]);
 
-  useEffect(() => {
-    loadCatalog();
-  }, [loadCatalog]);
-
-  useEffect(() => {
-    loadPk();
-  }, [loadPk]);
-
-  function addEnterprise(id: string) {
-    if (selectedIds.includes(id) || selectedIds.length >= MAX_PK) return;
-    setSelectedIds([...selectedIds, id]);
-  }
-
-  function removeEnterprise(id: string) {
-    setSelectedIds(selectedIds.filter((x) => x !== id));
-  }
+  useEffect(() => { loadCatalog(); }, [loadCatalog]);
+  useEffect(() => { loadPk(); }, [loadPk]);
 
   const idToName = useMemo(() => {
     const map = new Map<string, string>();
@@ -255,87 +184,43 @@ export default function EnterprisePK() {
   }, [allEnterprises, pkData]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">
-          <Link to="/">
-            <ArrowLeft className="h-4 w-4" />
-            返回首页
-          </Link>
-        </Button>
+    <div className="w-full space-y-4 sm:space-y-5 fade-in pb-6">
+      <Card className="glass">
+        <CardContent className="space-y-3 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedIds.map((id) => (
+              <Badge key={id} className="flex items-center gap-1 border-white/15 bg-white/[0.06] px-3 py-1 text-neutral-200 max-w-full">
+                <span className="truncate">{idToName.get(id) ?? id}</span>
+                <button type="button" onClick={() => setSelectedIds(selectedIds.filter((x) => x !== id))} className="ml-1 shrink-0 rounded-full p-0.5 hover:bg-white/10">
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+          {selectedIds.length < MAX_PK && (
+            <SearchBox enterprises={allEnterprises} excludeIds={selectedIds} onSelect={(id) => setSelectedIds([...selectedIds, id])} placeholder="添加企业" className="w-full max-w-md" />
+          )}
+        </CardContent>
+      </Card>
 
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">企业 PK 对比</h1>
-          <p className="mt-1 text-sm text-slate-400">最多选择 {MAX_PK} 家企业进行三维评分对比</p>
-        </div>
+      {loading && <LoadingBlock />}
+      {!loading && error && <ErrorBlock message={error} onRetry={loadPk} />}
+      {!loading && !error && selectedIds.length === 0 && <EmptyBlock message="添加企业开始对比" />}
 
-        {/* 已选标签 + 添加搜索 */}
-        <Card className="mb-6 border-slate-800">
-          <CardContent className="space-y-4 p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              {selectedIds.length === 0 ? (
-                <span className="text-sm text-slate-500">尚未选择企业，请通过下方搜索添加</span>
-              ) : (
-                selectedIds.map((id) => (
-                  <Badge
-                    key={id}
-                    className="flex items-center gap-1 border-slate-600 bg-slate-800 px-3 py-1 text-slate-200"
-                  >
-                    {idToName.get(id) ?? id}
-                    <button
-                      type="button"
-                      onClick={() => removeEnterprise(id)}
-                      className="ml-1 rounded-full p-0.5 hover:bg-slate-700"
-                      aria-label={`移除 ${id}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))
-              )}
-              {selectedIds.length > 0 && (
-                <span className="text-xs text-slate-500">
-                  {selectedIds.length}/{MAX_PK}
-                </span>
-              )}
-            </div>
-            {selectedIds.length < MAX_PK && (
-              <SearchBox
-                enterprises={allEnterprises}
-                excludeIds={selectedIds}
-                onSelect={addEnterprise}
-                placeholder="添加企业..."
-                className="max-w-md"
-              />
-            )}
-          </CardContent>
-        </Card>
+      {!loading && !error && pkData.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6">
+            <Card className="glass xl:col-span-3 min-w-0">
+              <CardContent className="pt-4 overflow-x-auto"><BarChart data={pkData} /></CardContent>
+            </Card>
 
-        {loading && <LoadingBlock />}
-        {!loading && error && <ErrorBlock message={error} onRetry={loadPk} />}
-        {!loading && !error && selectedIds.length === 0 && (
-          <EmptyBlock message="请添加至少一家企业开始对比" />
-        )}
-        {!loading && !error && pkData.length > 0 && (
-          <>
-            <div className="grid gap-6 lg:grid-cols-5">
-              <Card className="border-slate-800 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-base">三维评分对比</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <BarChart data={pkData} />
-                </CardContent>
-              </Card>
-
-              <Card className="border-slate-800 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-base">综合分排名</CardTitle>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <table className="w-full text-sm">
+            <Card className="glass xl:col-span-2 min-w-0">
+              <CardContent className="pt-4">
+                {/* 桌面表格 */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm min-w-[280px]">
                     <thead>
-                      <tr className="border-b border-slate-800 text-left text-slate-500">
+                      <tr className="border-b border-white/[0.06] text-left text-neutral-500">
                         <th className="pb-2 pr-2">#</th>
                         <th className="pb-2 pr-2">企业</th>
                         <th className="pb-2 pr-2">总分</th>
@@ -344,61 +229,41 @@ export default function EnterprisePK() {
                     </thead>
                     <tbody>
                       {pkData.map((ent, idx) => (
-                        <tr
-                          key={ent.enterprise_id}
-                          className="border-b border-slate-800/60 hover:bg-slate-800/30"
-                        >
-                          <td className="py-3 pr-2 text-slate-500">{idx + 1}</td>
-                          <td className="py-3 pr-2">
-                            <Link
-                              to={`/enterprise/${ent.enterprise_id}`}
-                              className="font-medium text-slate-200 hover:text-blue-400"
-                            >
-                              {ent.enterprise_name}
-                            </Link>
-                            <p className="text-xs text-slate-500">{ent.enterprise_id}</p>
+                        <tr key={ent.enterprise_id} className="border-b border-white/[0.04] hover:bg-white/[0.03]">
+                          <td className="py-3 pr-2 text-neutral-500">{idx + 1}</td>
+                          <td className="py-3 pr-2 min-w-0">
+                            <Link to={`/enterprise/${ent.enterprise_id}`} className="font-medium text-neutral-200 hover:text-white truncate block">{ent.enterprise_name}</Link>
+                            <p className="text-xs text-neutral-600">{ent.enterprise_id}</p>
                           </td>
-                          <td className={`py-3 pr-2 font-bold tabular-nums ${RISK_LEVEL_TEXT[ent.risk_level] ?? ""}`}>
-                            {ent.overall_score.toFixed(1)}
-                          </td>
-                          <td className="py-3">
-                            <Badge className={RISK_LEVEL_COLORS[ent.risk_level] ?? RISK_LEVEL_COLORS["高风险"]}>
-                              {ent.risk_level}
-                            </Badge>
-                          </td>
+                          <td className={`py-3 pr-2 font-bold tabular-nums ${RISK_LEVEL_TEXT[ent.risk_level] ?? ""}`}>{ent.overall_score.toFixed(1)}</td>
+                          <td className="py-3"><Badge className={RISK_LEVEL_COLORS[ent.risk_level] ?? RISK_LEVEL_COLORS["高风险"]}>{ent.risk_level}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-
-                  <div className="mt-4 space-y-2">
-                    {pkData.map((ent) => (
-                      <div key={ent.enterprise_id} className="rounded-lg bg-slate-900/50 p-3 text-xs">
-                        <p className="mb-1 font-medium text-slate-300">{ent.enterprise_name}</p>
-                        <div className="flex justify-between text-slate-500">
-                          <span>税务 {ent.dimensions.tax_health.toFixed(1)}</span>
-                          <span>真实 {ent.dimensions.authenticity.toFixed(1)}</span>
-                          <span>财务 {ent.dimensions.finance.toFixed(1)}</span>
-                        </div>
+                </div>
+                {/* 移动端卡片 */}
+                <div className="sm:hidden space-y-3">
+                  {pkData.map((ent, idx) => (
+                    <Link key={ent.enterprise_id} to={`/enterprise/${ent.enterprise_id}`} className="block glass-card rounded-xl p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-neutral-500 text-xs">#{idx + 1}</span>
+                        <Badge className={RISK_LEVEL_COLORS[ent.risk_level] ?? RISK_LEVEL_COLORS["高风险"]}>{ent.risk_level}</Badge>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="mt-6 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-base">维度差异热力图</CardTitle>
-                <p className="text-sm text-slate-500">颜色越深表示分值越高</p>
-              </CardHeader>
-              <CardContent>
-                <HeatmapChart data={pkData} />
+                      <p className="font-medium text-neutral-200 mt-1 truncate">{ent.enterprise_name}</p>
+                      <p className={`text-2xl font-bold tabular-nums mt-2 ${RISK_LEVEL_TEXT[ent.risk_level] ?? ""}`}>{ent.overall_score.toFixed(1)}</p>
+                    </Link>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          </>
-        )}
-      </div>
+          </div>
+
+          <Card className="glass min-w-0">
+            <CardContent className="pt-4 overflow-x-auto"><HeatmapChart data={pkData} /></CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
