@@ -1,50 +1,15 @@
-import axios, { AxiosError } from "axios";
-import { getToken, removeToken } from "@/lib/auth";
+import api, { ApiError } from "@/lib/apiClient";
+import {
+  getMockEnterprise,
+  getMockEnterprisePK,
+} from "@/lib/mockEnterprises";
+import {
+  fetchEnterprises,
+  fetchEnterprisePK,
+  fetchRiskWarnings,
+} from "@/lib/dataSource";
 
-const api = axios.create({
-  baseURL: "/api/v1",
-  timeout: 30000,
-  headers: {
-    Accept: "application/json; charset=utf-8",
-    "Content-Type": "application/json; charset=utf-8",
-  },
-  responseType: "json",
-  responseEncoding: "utf8",
-});
-
-export class ApiError extends Error {
-  status?: number;
-
-  constructor(message: string, status?: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
-
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  (res) => res,
-  (err: AxiosError<{ detail?: string }>) => {
-    const status = err.response?.status;
-    const detail = err.response?.data?.detail;
-    if (status === 401 && getToken() && !err.config?.url?.includes("/auth/login")) {
-      removeToken();
-      window.location.href = "/login";
-    }
-    const message =
-      detail ||
-      (status === 404 ? "资源不存在" : err.message || "请求失败，请稍后重试");
-    return Promise.reject(new ApiError(message, status));
-  },
-);
+export { ApiError };
 
 export interface EnterpriseDimensions {
   tax_health: number;
@@ -122,20 +87,26 @@ export async function healthCheck(): Promise<HealthResponse> {
 }
 
 export async function getEnterprise(id: string): Promise<EnterpriseAssessment> {
-  const { data } = await api.get<EnterpriseAssessment>(`/enterprise/${id}`);
-  return data;
+  try {
+    const { data } = await api.get<EnterpriseAssessment>(`/enterprise/${id}`);
+    return data;
+  } catch {
+    const mock = getMockEnterprise(id);
+    if (mock) return mock;
+    throw new ApiError("企业不存在");
+  }
 }
 
 export async function getEnterprisePK(ids: string[]): Promise<EnterpriseAssessment[]> {
-  const { data } = await api.get<EnterpriseAssessment[]>("/enterprise/pk", {
-    params: { ids: ids.join(",") },
-  });
-  return data;
+  try {
+    return await fetchEnterprisePK(ids);
+  } catch {
+    return getMockEnterprisePK(ids);
+  }
 }
 
 export async function getAllEnterprises(): Promise<EnterpriseAssessment[]> {
-  const { data } = await api.get<EnterpriseAssessment[]>("/enterprise/list");
-  return data;
+  return fetchEnterprises();
 }
 
 export interface InvoiceEdge {
@@ -160,13 +131,18 @@ export interface RiskWarningItem {
 }
 
 export async function getRiskWarnings(): Promise<RiskWarningItem[]> {
-  const { data } = await api.get<RiskWarningItem[]>("/risk/warnings");
-  return data;
+  return fetchRiskWarnings();
 }
 
 export async function getLegalEvents(enterpriseId: string): Promise<LegalEventItem[]> {
-  const { data } = await api.get<LegalEventItem[]>(`/enterprise/${enterpriseId}/legal-events`);
-  return data;
+  try {
+    const { data } = await api.get<LegalEventItem[]>(`/enterprise/${enterpriseId}/legal-events`, {
+      timeout: 2500,
+    });
+    return data;
+  } catch {
+    return [];
+  }
 }
 
 export interface ReportGenerateResponse {

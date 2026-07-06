@@ -49,43 +49,6 @@ TEST_CASES: list[tuple[str, str]] = [
     ("谢谢", "chat"),
 ]
 
-COMPANIES: list[tuple[str, str]] = [
-    ("ENT001", "深圳明达科技有限公司"),
-    ("ENT002", "上海恒信贸易集团"),
-    ("ENT003", "北京智云信息技术有限公司"),
-    ("ENT004", "广州华南制造股份有限公司"),
-    ("ENT005", "杭州绿源新能源科技"),
-    ("ENT006", "成都天府物流有限公司"),
-    ("ENT007", "武汉光谷生物医药"),
-    ("ENT008", "南京金陵建筑工程"),
-    ("ENT009", "天津滨海港口服务"),
-    ("ENT010", "重庆山城餐饮连锁"),
-]
-
-# 企业简称 → ID（边界测试 T4-简称）
-COMPANY_ALIASES: dict[str, str] = {
-    "深圳明达": "ENT001",
-    "明达": "ENT001",
-    "上海恒信": "ENT002",
-    "恒信": "ENT002",
-    "北京智云": "ENT003",
-    "智云": "ENT003",
-    "广州华南": "ENT004",
-    "华南": "ENT004",
-    "杭州绿源": "ENT005",
-    "绿源": "ENT005",
-    "成都天府": "ENT006",
-    "天府": "ENT006",
-    "武汉光谷": "ENT007",
-    "光谷": "ENT007",
-    "南京金陵": "ENT008",
-    "金陵": "ENT008",
-    "天津滨海": "ENT009",
-    "滨海": "ENT009",
-    "重庆山城": "ENT010",
-    "山城": "ENT010",
-}
-
 GENERIC_FRAGMENTS = {
     "有限", "公司", "股份", "科技", "中国", "集团", "服务", "贸易", "制造", "信息", "物流",
 }
@@ -133,6 +96,53 @@ OUTPUT_MAP: dict[str, str] = {
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w.-]+\.\w+")
 ENT_ID_RE = re.compile(r"ENT\d{3}", re.IGNORECASE)
+
+
+def _load_companies() -> list[tuple[str, str]]:
+    """动态加载企业映射：优先从 DB，回退 mock_data"""
+    try:
+        import asyncio
+        from app.db.session import AsyncSessionLocal
+        from sqlalchemy import text
+
+        async def _db_load():
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(text("SELECT enterprise_id, enterprise_name FROM core_metrics"))
+                return [(row[0], row[1]) for row in result.all()]
+
+        companies = asyncio.get_event_loop().run_until_complete(_db_load())
+        if companies:
+            return companies
+    except Exception:
+        pass
+
+    # Fallback: 从 mock_data 加载全部企业
+    from app.services.mock_data import MOCK_ENTERPRISES
+    return [(e["enterprise_id"], e["enterprise_name"]) for e in MOCK_ENTERPRISES]
+
+
+def _build_aliases(companies: list[tuple[str, str]]) -> dict[str, str]:
+    """从企业全称自动生成简称映射"""
+    aliases: dict[str, str] = {}
+    for eid, name in companies:
+        # 去掉后缀生成简称
+        for suffix in ["有限公司", "股份有限公司", "集团有限公司", "科技", "集团"]:
+            if name.endswith(suffix):
+                short = name[: -len(suffix)]
+                if len(short) >= 2 and short not in GENERIC_FRAGMENTS:
+                    aliases[short] = eid
+                break
+        # 取前2-3个字作为简称
+        if len(name) >= 4:
+            aliases[name[:4]] = eid
+        if len(name) >= 3:
+            aliases[name[:3]] = eid
+    return aliases
+
+
+# 动态加载（模块导入时执行一次）
+COMPANIES: list[tuple[str, str]] = _load_companies()
+COMPANY_ALIASES: dict[str, str] = _build_aliases(COMPANIES)
 
 
 @dataclass

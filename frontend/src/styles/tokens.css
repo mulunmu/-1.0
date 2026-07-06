@@ -1,0 +1,35 @@
+/**
+ * Fluxora 沉浸视觉 — 方案 C 统一 tokens
+ * 8px 栅格 · 8px 圆角 · 无玻璃/渐变/发光
+ */
+:root {
+  --color-bg-deep: #050508;
+  --color-bg-elevated: #0c0c0e;
+  --color-bg-surface: #141417;
+
+  --color-fg: #fafafa;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #71717a;
+
+  /* 主 accent */
+  --color-primary: #3b82f6;
+  --color-indigo: #6366f1;
+  --color-cyan: #38bdf8;
+  --color-violet: #8b5cf6;
+
+  /* 全局统一圆角 8px */
+  --radius-standard: 8px;
+
+  /* 边框 */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  /* 字体 */
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+  --font-sans: "Inter", "PingFang SC", system-ui, sans-serif;
+
+  /* 动效统一 200ms */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-duration: 200ms;
+}

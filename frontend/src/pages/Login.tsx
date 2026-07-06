@@ -1,107 +1,76 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useNavigate, useLocation } from "react-router-dom";
+import { RiskCard } from "@/components/ui/RiskCard";
+import LoginForm from "@/components/LoginForm";
+import CosmicBrandText from "@/components/ui/CosmicBrandText";
 import { setToken } from "@/lib/auth";
 import api, { ApiError } from "@/lib/api";
-import CosmicBackground from "@/components/CosmicBackground";
-import LoginBrandMark from "@/components/LoginBrandMark";
-import LoginDeepSpace from "@/components/LoginDeepSpace";
+import { ROUTES } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+import CosmicShaderBackground from "@/components/background/CosmicShaderBackground";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@test.com");
-  const [password, setPassword] = useState("123456");
+  const location = useLocation();
+  const state = location.state as { email?: string } | null;
+
+  const [email, setEmail] = useState(state?.email ?? "");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [exiting, setExiting] = useState(false);
 
   const handleLogin = async () => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await api.post<{ access_token: string }>("/auth/login", { email, password });
+      const { data } = await api.post<{ access_token: string }>("/auth/login", {
+        email,
+        password,
+      });
       setToken(data.access_token);
-      navigate("/dashboard");
+      setExiting(true);
+      setTimeout(() => navigate(ROUTES.hub), 300);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "登录失败");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 bg-[#161616]">
-      <CosmicBackground />
-      <LoginDeepSpace />
+    <div
+      className={cn(
+        "relative z-[1] isolate min-h-screen flex flex-col lg:flex-row overflow-hidden",
+        "transition-opacity duration-300 ease-out",
+        exiting && "opacity-0 pointer-events-none",
+      )}
+    >
+      <CosmicShaderBackground variant="login" fixed />
 
-      <div className="relative z-10 w-full max-w-[440px] fade-in">
-        <div className="glass-login p-10">
-          <div className="flex flex-col items-center mb-10">
-            <div className="mb-5 flex items-center justify-center w-16 h-16 rounded-2xl border border-white/10 bg-white/[0.03]">
-              <LoginBrandMark size={52} />
-            </div>
-            <h1 className="text-[28px] font-light tracking-[0.08em] text-white">
-              风险<span className="font-semibold">评估</span>
-            </h1>
-            <p className="text-[10px] tracking-[0.2em] text-neutral-500 mt-3">
-              企业风险智能分析
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">企业多维风险评估系统</p>
-          </div>
+      {/* 左侧：标题位于光带展开区 */}
+      <div className="relative z-10 flex-[0.42] flex flex-col justify-center py-12 px-8 sm:px-10 lg:px-14 max-lg:items-center max-lg:text-center">
+        <CosmicBrandText
+          title="企业风险评估系统"
+          lead="多维评分 · 关系网络 · 智能预警"
+          meta="200 家样本 · 五维风控模型"
+          align="left"
+          size="login"
+          className="max-lg:items-center max-lg:[&_.cosmic-brand-title]:text-center"
+        />
+      </div>
 
-          <div className="mono-divider mb-8 opacity-60" />
-
-          {error && (
-            <p className="text-sm text-red-400 bg-red-400/5 border border-red-400/20 p-3 rounded-lg mb-5 text-center">
-              {error}
-            </p>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] tracking-[0.15em] text-neutral-500 mb-2 block">邮箱</label>
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@test.com"
-                className="bg-white/[0.04] border-white/10 focus:border-white/30 text-white h-12 rounded-lg placeholder:text-neutral-600"
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] tracking-[0.15em] text-neutral-500 mb-2 block">密码</label>
-              <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                placeholder="••••••"
-                className="bg-white/[0.04] border-white/10 focus:border-white/30 text-white h-12 rounded-lg placeholder:text-neutral-600"
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
-          </div>
-
-          <Button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full h-12 mt-8 bg-white text-black hover:bg-neutral-200 font-medium tracking-[0.1em] text-sm rounded-lg transition-all duration-300"
-          >
-            {loading ? "登录中..." : "进入系统"}
-          </Button>
-
-          <p className="text-center text-[11px] text-neutral-600 mt-8 leading-relaxed">
-            还没有账号？
-            <Link to="/register" className="text-neutral-400 hover:text-white transition-colors mx-1 underline-offset-4 hover:underline">
-              注册
-            </Link>
-            <br />
-            <span className="text-neutral-700 mt-1 inline-block">演示 · admin@test.com / 123456</span>
-          </p>
-        </div>
-
-        <p className="text-center text-[10px] text-neutral-700 tracking-widest mt-6">
-          安全加密传输 · v1.0
-        </p>
+      <div className="relative z-10 flex w-full lg:flex-[0.58] flex-col justify-center px-8 py-12">
+        <RiskCard className="w-full max-w-[400px] mx-auto">
+          <LoginForm
+            email={email}
+            password={password}
+            error={error}
+            loading={loading}
+            onEmailChange={setEmail}
+            onPasswordChange={setPassword}
+            onSubmit={handleLogin}
+          />
+        </RiskCard>
       </div>
     </div>
   );

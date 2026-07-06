@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from jose import jwt
 
-JWT_SECRET = os.getenv("JWT_SECRET", "risk-assessment-dev-secret-change-in-prod")
+# 生产环境必须通过环境变量设置；演示环境每次启动生成随机密钥
+JWT_SECRET = os.getenv("JWT_SECRET") or secrets.token_hex(32)
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
 
@@ -20,14 +22,8 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-# 演示账号 + 运行时注册用户
-_users: dict[str, dict] = {
-    "admin@test.com": {
-        "email": "admin@test.com",
-        "password_hash": hash_password("123456"),
-        "role": "admin",
-    }
-}
+# 运行时注册用户（演示阶段无持久化存储）。首次使用请注册新账号。
+_users: dict[str, dict] = {}
 
 
 def register_user(email: str, password: str) -> None:
@@ -55,3 +51,17 @@ def create_access_token(email: str, role: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS)
     payload = {"sub": email, "role": role, "exp": expire}
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def verify_token(token: str) -> dict | None:
+    """验证 JWT 令牌，返回 payload 或 None"""
+    try:
+        token = token.removeprefix("Bearer ").strip()
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload if payload.get("sub") else None
+    except Exception:
+        return None
+
+
+# 演示阶段：设置 AUTH_REQUIRED=false 可跳过认证检查
+AUTH_REQUIRED = os.getenv("AUTH_REQUIRED", "false").lower() == "true"

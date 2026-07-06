@@ -1,0 +1,770 @@
+{
+  "version": "0.3.2",
+  "project": {
+    "root": "D:\\projects\\risk-assessment\\frontend",
+    "frontendRoot": "D:\\projects\\risk-assessment\\frontend",
+    "stack": "react",
+    "styling": "tailwind",
+    "bundler": "vite",
+    "reactVersion": "^19.0.0",
+    "tailwindVersion": "^3.4.17",
+    "hasRails": false,
+    "hasTailwindConfig": true,
+    "hasStorybook": false
+  },
+  "score": 90,
+  "grade": "Great",
+  "counts": {
+    "error": 2,
+    "warning": 63,
+    "info": 17
+  },
+  "stats": {
+    "totalFindings": 82,
+    "affectedFiles": 33,
+    "elapsedMs": 795,
+    "analyzers": [
+      "design-tokens",
+      "microcopy",
+      "a11y",
+      "forms",
+      "ui-states",
+      "stack",
+      "variants",
+      "shadcn",
+      "classes"
+    ]
+  },
+  "diagnostics": [
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around #ffffff (12 uses): #ffffff, #f5f5f5, #fafafa, #fff",
+      "file": "src\\components\\bits\\LoginParticles.tsx",
+      "line": 16,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 near-duplicate colors clustered around #737373 (3 uses): #737373, rgba(115,115,115,0.1)",
+      "file": "src\\lib\\theme.ts",
+      "line": 67,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 near-duplicate colors clustered around #d4d4d4 (3 uses): #d4d4d4, rgba(212,212,212,0.25)",
+      "file": "src\\lib\\theme.ts",
+      "line": 105,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 near-duplicate colors clustered around #1a1a1a (7 uses): #1a1a1a, rgba(22,22,22,0.92), #161616, #0a0a0a, rgba(18, 18, 18, 0.82)",
+      "file": "src\\lib\\theme.ts",
+      "line": 119,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 near-duplicate colors clustered around #c4a06a (5 uses): #c4a06a, rgba(196,160,106,0.4), rgba(196,160,106,0.1)",
+      "file": "src\\lib\\theme.ts",
+      "line": 17,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 near-duplicate colors clustered around #6eb5a8 (5 uses): #6eb5a8, rgba(110,181,168,0.35), rgba(110,181,168,0.1)",
+      "file": "src\\lib\\theme.ts",
+      "line": 11,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around #22d3ee (10 uses): #22d3ee, rgba(34, 211, 238, 0.35), rgba(34, 211, 238, 0.5), rgba(34, 211, 238, 0.15)",
+      "file": "src\\components\\LineSigil.tsx",
+      "line": 78,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 near-duplicate colors clustered around #06b6d4 (4 uses): #06b6d4, rgba(6,182,212,0)",
+      "file": "src\\components\\ParticlesBackground.tsx",
+      "line": 15,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 near-duplicate colors clustered around rgba(14, 165, 233, 0.12) (5 uses): rgba(14, 165, 233, 0.12), rgba(14, 165, 233, 0.28), rgba(14, 165, 233, 0.35), rgba(14, 165, 233, 0.08), #0ea5e9",
+      "file": "src\\index.css",
+      "line": 360,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around #60a5fa (9 uses): #60a5fa, rgba(96, 165, 250, 0.15), rgba(96, 165, 250, 0.25), rgba(96, 165, 250, 0.35)",
+      "file": "src\\components\\login\\LoginPortal3D.tsx",
+      "line": 44,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "12 near-duplicate colors clustered around #94a3b8 (18 uses): #94a3b8, #8fa3b8, #9ca3af, #9ca8c4, rgba(143,163,184,0.35), rgba(156,163,175,0.3)…",
+      "file": "src\\components\\login\\LoginPortal3D.tsx",
+      "line": 70,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "13 near-duplicate colors clustered around #3b82f6 (27 uses): #3b82f6, rgba(59,130,246,0.5), rgba(59,130,246,0.12), rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.06), rgba(59, 130, 246, 0.15)…",
+      "file": "src\\components\\nav\\NavPrismRail.tsx",
+      "line": 97,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 near-duplicate colors clustered around #cbd5e1 (6 uses): #cbd5e1, #e2e8f0, rgba(200, 214, 235, 0.22)",
+      "file": "src\\lib\\theme.ts",
+      "line": 115,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around #0a0e17 (4 uses): #0a0e17, rgba(3, 7, 18, 0.6), rgba(3, 7, 18, 0.55), rgba(3, 7, 18, 0.85)",
+      "file": "tailwind.config.js",
+      "line": 8,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 near-duplicate colors clustered around #6366f1 (7 uses): #6366f1, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.25), rgba(99, 102, 241, 0.18)",
+      "file": "src\\index.css",
+      "line": 179,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 near-duplicate colors clustered around #f8fafc (5 uses): #f8fafc, rgba(232, 238, 247, 0.08), rgba(232, 238, 247, 0.15), rgba(232, 238, 247, 0.04), rgba(232, 238, 247, 0.4)",
+      "file": "src\\index.css",
+      "line": 553,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around rgba(147, 197, 253, 0.12) (4 uses): rgba(147, 197, 253, 0.12), rgba(147, 197, 253, 0.04), rgba(147, 197, 253, 0.18), #93c5fd",
+      "file": "src\\index.css",
+      "line": 102,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 near-duplicate colors clustered around #a1a1aa (6 uses): #a1a1aa, rgba(161, 161, 170, 0.06), rgba(161, 161, 170, 0.4), rgba(161, 161, 170, 0.1)",
+      "file": "src\\components\\bits\\LoginParticles.tsx",
+      "line": 16,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "15 near-duplicate colors clustered around #0a0a0c (16 uses): #0a0a0c, rgba(5, 5, 8, 0.4), rgba(5, 5, 8, 0.85), rgba(5, 5, 8, 0.75), rgba(12,12,14,0.92), rgba(12, 12, 14, 0.72)…",
+      "file": "src\\components\\CosmicBackground.tsx",
+      "line": 5,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 near-duplicate colors clustered around #ec4899 (4 uses): #ec4899, rgba(236,72,153,0)",
+      "file": "src\\components\\ParticlesBackground.tsx",
+      "line": 15,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/color-cluster",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 near-duplicate colors clustered around #c97b8e (6 uses): #c97b8e, rgba(201,123,142,0.45), rgba(201,123,142,0.1)",
+      "file": "src\\lib\\theme.ts",
+      "line": 19,
+      "fix": "Consolidate near-duplicate colors into a single token. Same hue ≠ same intent — pick one."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (text-[10px], text-[10px])",
+      "file": "src\\App.tsx",
+      "line": 66,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (z-[1])",
+      "file": "src\\components\\bits\\LoginParticles.tsx",
+      "line": 10,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (text-[10px], min-w-[260px])",
+      "file": "src\\components\\ChatInlineChart.tsx",
+      "line": 117,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (text-[10px])",
+      "file": "src\\components\\DataBoundaryTag.tsx",
+      "line": 5,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (z-[100])",
+      "file": "src\\components\\login\\LoginCinematicOverlay.tsx",
+      "line": 42,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (z-[1])",
+      "file": "src\\components\\LoginDeepSpace.tsx",
+      "line": 173,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "7 arbitrary Tailwind values bypass the scale (rounded-[var(--radius-card)], z-[1], text-[10px]…)",
+      "file": "src\\components\\LoginForm.tsx",
+      "line": 22,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (text-[9px])",
+      "file": "src\\components\\nav\\NavMobileDock.tsx",
+      "line": 38,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (text-[10px], text-[9px])",
+      "file": "src\\components\\nav\\NavPrismRail.tsx",
+      "line": 61,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (w-[88px], w-[240px])",
+      "file": "src\\components\\nav\\NavPrismShell.tsx",
+      "line": 82,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 arbitrary Tailwind values bypass the scale (text-[13px], text-[10px], min-h-[2rem])",
+      "file": "src\\components\\nav\\NavRailList.tsx",
+      "line": 54,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (text-[10px])",
+      "file": "src\\components\\SearchBox.tsx",
+      "line": 120,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (text-[10px])",
+      "file": "src\\components\\WarningSignalBadge.tsx",
+      "line": 15,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "18 arbitrary Tailwind values bypass the scale (text-[10px], text-[10px], text-[10px]…)",
+      "file": "src\\pages\\ChatPanel.tsx",
+      "line": 131,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "10 arbitrary Tailwind values bypass the scale (rounded-[20px], rounded-[20px], rounded-[20px]…)",
+      "file": "src\\pages\\Dashboard.tsx",
+      "line": 108,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 arbitrary Tailwind values bypass the scale (text-[10px], text-[11px], text-[11px]…)",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 80,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (min-w-[280px])",
+      "file": "src\\pages\\EnterprisePK.tsx",
+      "line": 221,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (max-h-[calc(100vh-12rem)], text-[10px])",
+      "file": "src\\pages\\EnterpriseSearch.tsx",
+      "line": 36,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "8 arbitrary Tailwind values bypass the scale (text-[var(--color-fg)], text-[2.5rem], lg:text-[3.5rem]…)",
+      "file": "src\\pages\\Login.tsx",
+      "line": 86,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "3 arbitrary Tailwind values bypass the scale (bg-[#161616], w-[min(100%-2rem,380px)], text-[10px])",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1139,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "2 arbitrary Tailwind values bypass the scale (max-w-[440px], text-[11px])",
+      "file": "src\\pages\\Register.tsx",
+      "line": 40,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "1 arbitrary Tailwind value bypasses the scale (text-[10px])",
+      "file": "src\\pages\\Reports.tsx",
+      "line": 31,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/arbitrary-tailwind-value",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 arbitrary Tailwind values bypass the scale (w-[28%], w-[12%], w-[10%]…)",
+      "file": "src\\pages\\RiskWarnings.tsx",
+      "line": 84,
+      "fix": "Use a scale token (`p-3`, `text-sm`) instead of `[13px]`/`[#abc]`. Extend the config if the token is genuinely missing."
+    },
+    {
+      "ruleId": "design/font-weight-cardinality",
+      "severity": "warning",
+      "category": "design",
+      "message": "5 distinct font weights in use: 500, 300, 600, 400, 700",
+      "file": "D:\\projects\\risk-assessment\\frontend",
+      "fix": "Most UIs need 3 weights (regular/medium/bold). Pick a small set and stick to it."
+    },
+    {
+      "ruleId": "design/font-family-cardinality",
+      "severity": "warning",
+      "category": "design",
+      "message": "4 distinct font families in use",
+      "file": "D:\\projects\\risk-assessment\\frontend",
+      "fix": "One sans + optionally one mono is plenty. Extra families make the UI feel chaotic."
+    },
+    {
+      "ruleId": "design/zindex-ladder",
+      "severity": "warning",
+      "category": "design",
+      "message": "9 distinct z-index values in use: 0, 1, 2, 10, 20, 30, 40, 50, 9999",
+      "file": "D:\\projects\\risk-assessment\\frontend",
+      "fix": "Define a named z-scale (dropdown/sticky/modal/toast/tooltip) and reference it."
+    },
+    {
+      "ruleId": "design/shadow-sprawl",
+      "severity": "info",
+      "category": "design",
+      "message": "25 distinct shadow definitions in use",
+      "file": "D:\\projects\\risk-assessment\\frontend",
+      "fix": "Most design systems have 3–5 elevation tokens. Consolidate."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (2 px, 1 rem)",
+      "file": "src\\App.tsx",
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (2 px, 1 rem)",
+      "file": "src\\components\\nav\\NavRailList.tsx",
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (1 px, 1 rem)",
+      "file": "src\\pages\\EnterpriseSearch.tsx",
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (5 px, 2 rem)",
+      "file": "src\\pages\\Login.tsx",
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (4 px, 1 rem): <div className=\"absolute top-4 left-4 z-20 w-[min(100%-2rem,380px)] pointer-events-none\">",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1158,
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/mixed-units",
+      "severity": "info",
+      "category": "design",
+      "message": "Mixed px and rem in same file (118 px, 48 rem): 0 20px 56px rgba(0, 0, 0, 0.5);",
+      "file": "src\\index.css",
+      "line": 209,
+      "fix": "Pick one of px or rem for spacing/sizing and stay consistent."
+    },
+    {
+      "ruleId": "design/inline-styles",
+      "severity": "warning",
+      "category": "design",
+      "message": "Inline style={{...}} with static properties (padding/color/etc.) — Tailwind class equivalents stay in the design system.",
+      "file": "src\\components\\nav\\NavPrismRail.tsx",
+      "line": 171,
+      "fix": "Move padding/color/font-size/etc. to className. Reserve inline `style` for genuinely dynamic values (CSS variables, computed transforms)."
+    },
+    {
+      "ruleId": "copy/cta-too-long",
+      "severity": "warning",
+      "category": "copy",
+      "message": "Button text \"handleExample(ex.query)\n                  className=\"rounde…\" is 15 words.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1192,
+      "fix": "CTAs should be 1–4 words, verb-first, no period. \"Save changes\" not \"Click here to save your changes.\""
+    },
+    {
+      "ruleId": "copy/html-entity",
+      "severity": "info",
+      "category": "copy",
+      "message": "\"200 家交易企业&nbsp;&nbsp;|&nbsp;&nbsp; 条交易关系&nbsp;&nbsp;|&nbsp;&nbsp;5 大行业星团\" contains an HTML entity that should be a Unicode char in JSX.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1211,
+      "fix": "JSX renders text directly — write & not &amp; in JSX text."
+    },
+    {
+      "ruleId": "a11y/label-without-for",
+      "severity": "warning",
+      "category": "a11y",
+      "message": "<label> has no htmlFor and doesn't wrap an input. The browser can't associate it with anything.",
+      "file": "src\\components\\LoginForm.tsx",
+      "line": 30,
+      "fix": "Add `htmlFor=\"input-id\"` or wrap the input inside the label."
+    },
+    {
+      "ruleId": "a11y/label-without-for",
+      "severity": "warning",
+      "category": "a11y",
+      "message": "<label> has no htmlFor and doesn't wrap an input. The browser can't associate it with anything.",
+      "file": "src\\components\\LoginForm.tsx",
+      "line": 39,
+      "fix": "Add `htmlFor=\"input-id\"` or wrap the input inside the label."
+    },
+    {
+      "ruleId": "a11y/tap-target-too-small",
+      "severity": "warning",
+      "category": "a11y",
+      "message": "Icon button with p-1 around w-4 icon ≈ 24px — below the 44×44 minimum.",
+      "file": "src\\components\\MockDataBanner.tsx",
+      "line": 29,
+      "fix": "Ensure padding + child size totals at least 44×44px (WCAG 2.5.5). Tailwind: `p-3` around `w-5 h-5` icons."
+    },
+    {
+      "ruleId": "a11y/empty-heading",
+      "severity": "warning",
+      "category": "a11y",
+      "message": "<h1> renders no static text. Either remove it or set aria-label, otherwise screen-reader users hit a void heading.",
+      "file": "src\\pages\\Login.tsx",
+      "line": 110,
+      "fix": "Either give the heading text or remove it. Empty headings break document structure for screen readers."
+    },
+    {
+      "ruleId": "a11y/empty-heading",
+      "severity": "warning",
+      "category": "a11y",
+      "message": "<h2> renders no static text. Either remove it or set aria-label, otherwise screen-reader users hit a void heading.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1239,
+      "fix": "Either give the heading text or remove it. Empty headings break document structure for screen readers."
+    },
+    {
+      "ruleId": "ui/missing-empty-state",
+      "severity": "info",
+      "category": "ui",
+      "message": "1 list rendering without a .length empty-state branch.",
+      "file": "src\\components\\nav\\NavPrismRail.tsx",
+      "line": 118,
+      "fix": "Render an empty state with copy and a next-step CTA, not a blank panel."
+    },
+    {
+      "ruleId": "ui/missing-empty-state",
+      "severity": "info",
+      "category": "ui",
+      "message": "2 list renderings without a .length empty-state branch.",
+      "file": "src\\pages\\EnterpriseSearch.tsx",
+      "line": 31,
+      "fix": "Render an empty state with copy and a next-step CTA, not a blank panel."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "Badge's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\components\\ChatInlineChart.tsx",
+      "line": 117,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/variant-fighting",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<Button variant=\"outline\"> is overriding the variant with className=\"… border-white/15 …\". Pick one source of truth.",
+      "file": "src\\components\\StateViews.tsx",
+      "line": 19,
+      "fix": "Pick one source of truth — extend the variant in the design system or drop variant=."
+    },
+    {
+      "ruleId": "shadcn/variant-fighting",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<Button variant=\"outline\"> is overriding the variant with className=\"… border-white/15 …\". Pick one source of truth.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 187,
+      "fix": "Pick one source of truth — extend the variant in the design system or drop variant=."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "p's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 210,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "Badge's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 213,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/variant-fighting",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<Button variant=\"outline\"> is overriding the variant with className=\"… border-white/15 …\". Pick one source of truth.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 304,
+      "fix": "Pick one source of truth — extend the variant in the design system or drop variant=."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 319,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "p's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterpriseDetail.tsx",
+      "line": 325,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "td's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterprisePK.tsx",
+      "line": 238,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "p's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterprisePK.tsx",
+      "line": 254,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/cn-helper-recommended",
+      "severity": "info",
+      "category": "shadcn",
+      "message": "Badge's className is composed by string concat/template-literal. Use cn(...) (from @/lib/utils) so Tailwind merge resolves conflicts.",
+      "file": "src\\pages\\EnterpriseSearch.tsx",
+      "line": 51,
+      "fix": "Import { cn } from '@/lib/utils' (shadcn ships this) and pass space-separated args. Tailwind-merge resolves last-wins conflicts."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1169,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1179,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1192,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1242,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "shadcn/raw-html-with-shadcn",
+      "severity": "warning",
+      "category": "shadcn",
+      "message": "<button> used in a file that already imports <Button> from components/ui. Use the primitive for consistent styling.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1271,
+      "fix": "Use the shadcn primitive (Button, Input, Label, …) for consistent styling and built-in a11y."
+    },
+    {
+      "ruleId": "design/text-bg-clash",
+      "severity": "error",
+      "category": "design",
+      "message": "bg-white/[0.06] p-2.5 text-neutral-400 hover:text-white — text and background use the same token; almost certainly invisible.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1183,
+      "fix": "Same-token text and background renders invisible. Pick a contrasting foreground token."
+    },
+    {
+      "ruleId": "design/text-bg-clash",
+      "severity": "error",
+      "category": "design",
+      "message": "bg-white/10 hover:text-white — text and background use the same token; almost certainly invisible.",
+      "file": "src\\pages\\NetworkGraph.tsx",
+      "line": 1245,
+      "fix": "Same-token text and background renders invisible. Pick a contrasting foreground token."
+    }
+  ]
+}

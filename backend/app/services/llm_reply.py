@@ -194,7 +194,7 @@ def _extract_llm_content(response) -> str:
 async def generate_reply(query: str, intent: str, data: dict) -> str:
     if not _is_llm_configured():
         reply = _template_reply(intent, data, with_prefix=True)
-        print(f"[llm_reply] template(no LLM) reply[:200]={reply[:200]!r}")
+        logger.info("template(no LLM) reply[:200]=%r", reply[:200])
         return reply
 
     try:
@@ -236,18 +236,17 @@ async def generate_reply(query: str, intent: str, data: dict) -> str:
 
         response = litellm.completion(**completion_kwargs)
         raw = _extract_llm_content(response)
-        print(f"[llm_reply] LLM raw[:200]={raw[:200]!r}")
+        logger.info("LLM raw[:200]=%r", raw[:200])
 
         if not raw:
             reply = _template_reply(intent, data, with_prefix=True)
-            print(f"[llm_reply] empty LLM -> template[:200]={reply[:200]!r}")
+            logger.info("empty LLM -> template[:200]=%r", reply[:200])
             return reply
 
         rate_limiter.increment()
         return _ensure_reply(raw[:150])
     except Exception as exc:
         logger.warning("LLM reply failed: %s", exc)
-        print(f"[llm_reply] LLM error: {type(exc).__name__}: {exc}")
         reply = _template_reply(intent, data, with_prefix=True)
-        print(f"[llm_reply] fallback template[:200]={reply[:200]!r}")
+        logger.info("fallback template[:200]=%r", reply[:200])
         return reply

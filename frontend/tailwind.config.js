@@ -5,11 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#0a0e17",
-        foreground: "#e2e8f0",
+        background: "#050508",
+        foreground: "#fafafa",
         card: {
           DEFAULT: "transparent",
-          foreground: "#e2e8f0",
+          foreground: "#fafafa",
         },
       },
     },

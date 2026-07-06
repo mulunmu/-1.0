@@ -390,6 +390,13 @@ async def generate_report(
     return report_id, output_path
 
 
+import re as _re
+_SAFE_REPORT_ID = _re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+
 def get_report_path(report_id: str) -> Path | None:
-    path = REPORTS_DIR / f"{report_id}.pdf"
+    if not _SAFE_REPORT_ID.match(report_id):
+        return None
+    path = (REPORTS_DIR / f"{report_id}.pdf").resolve()
+    if not str(path).startswith(str(REPORTS_DIR.resolve())):
+        return None
     return path if path.exists() else None

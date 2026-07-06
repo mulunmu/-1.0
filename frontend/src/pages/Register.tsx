@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import CosmicBackground from "@/components/CosmicBackground";
+import { RiskCard } from "@/components/ui/RiskCard";
 import api, { ApiError } from "@/lib/api";
+import { ROUTES } from "@/lib/routes";
+import CosmicShaderBackground from "@/components/background/CosmicShaderBackground";
 
 export default function Register() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -26,7 +29,7 @@ export default function Register() {
     setLoading(true);
     try {
       await api.post("/auth/register", { email, password });
-      navigate("/login");
+      navigate(ROUTES.login, { state: { email } });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "注册失败");
     } finally {
@@ -35,20 +38,24 @@ export default function Register() {
   };
 
   return (
-    <div className="relative isolate min-h-screen flex items-center justify-center overflow-hidden px-4 bg-[#161616]">
-      <CosmicBackground />
+    <div className="relative z-[1] min-h-screen flex items-center justify-center px-4 overflow-hidden">
+      <CosmicShaderBackground variant="login" fixed />
 
-      <div className="relative z-10 w-full max-w-[440px] fade-in">
-        <div className="mono-divider mb-8" />
-        <div className="glass-login rounded-2xl p-10">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-light tracking-[0.06em] text-white">创建账号</h1>
-            <p className="text-[10px] tracking-[0.2em] text-neutral-500 mt-2">填写信息完成注册</p>
-          </div>
-          <div className="mono-divider mb-8" />
+      <div className="relative z-10 w-full max-w-[440px]">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-light text-[var(--color-fg)]">
+            创建账号
+          </h1>
+          <p className="text-xs text-[var(--color-fg-subtle)] tracking-widest mt-3 uppercase">
+            Join Risk Console
+          </p>
+        </div>
 
+        <RiskCard className="p-8 sm:p-10">
           {error && (
-            <p className="text-sm text-red-400 bg-red-400/5 border border-red-400/20 p-3 rounded-lg mb-5 text-center">{error}</p>
+            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mb-5 text-center">
+              {error}
+            </p>
           )}
 
           <div className="space-y-4">
@@ -56,21 +63,21 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="邮箱"
-              className="bg-white/[0.04] border-white/10 focus:border-white/30 text-white h-12 rounded-lg placeholder:text-neutral-600"
+              className="h-11 backdrop-blur-none bg-[var(--color-bg-elevated)] border-[var(--border-subtle)]"
             />
             <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               placeholder="密码"
-              className="bg-white/[0.04] border-white/10 focus:border-white/30 text-white h-12 rounded-lg placeholder:text-neutral-600"
+              className="h-11 backdrop-blur-none bg-[var(--color-bg-elevated)] border-[var(--border-subtle)]"
             />
             <Input
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               type="password"
               placeholder="确认密码"
-              className="bg-white/[0.04] border-white/10 focus:border-white/30 text-white h-12 rounded-lg placeholder:text-neutral-600"
+              className="h-11 backdrop-blur-none bg-[var(--color-bg-elevated)] border-[var(--border-subtle)]"
               onKeyDown={(e) => e.key === "Enter" && handleRegister()}
             />
           </div>
@@ -78,19 +85,21 @@ export default function Register() {
           <Button
             onClick={handleRegister}
             disabled={loading}
-            className="w-full h-12 mt-8 bg-white text-black hover:bg-neutral-200 font-medium tracking-[0.1em] text-sm rounded-lg"
+            className="w-full h-11 mt-6 font-medium"
           >
-            {loading ? "注册中..." : "注册"}
+            {loading ? "注册中…" : "注册"}
           </Button>
 
-          <p className="text-center text-[11px] text-neutral-600 mt-8">
+          <p className="text-center text-[11px] text-[var(--color-fg-subtle)] mt-6">
             已有账号？
-            <Link to="/login" className="text-neutral-400 hover:text-white transition-colors ml-1 underline-offset-4 hover:underline">
+            <Link
+              to={ROUTES.login}
+              className="text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] ml-1 transition-colors duration-200 ease-out"
+            >
               登录
             </Link>
           </p>
-        </div>
-        <div className="mono-divider mt-8" />
+        </RiskCard>
       </div>
     </div>
   );

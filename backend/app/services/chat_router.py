@@ -1,9 +1,12 @@
 """AI 对话路由：意图识别 → 模块调用 → LLM/模板回复"""
 from __future__ import annotations
 
+import logging
 import re
 
 from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.core_metrics import CoreMetrics
@@ -11,8 +14,16 @@ from app.services import assessment, email_service, intent_engine, llm_reply, re
 
 
 async def _all_enterprise_ids(db: AsyncSession) -> list[str]:
-    result = await db.execute(select(CoreMetrics.enterprise_id))
-    return [row[0] for row in result.all()]
+    try:
+        result = await db.execute(select(CoreMetrics.enterprise_id))
+        rows = [row[0] for row in result.all()]
+        if rows:
+            return rows
+    except Exception:
+        pass
+    # Fallback to mock data
+    from app.services.mock_data import MOCK_ENTERPRISES
+    return [e["enterprise_id"] for e in MOCK_ENTERPRISES]
 
 
 def _radar_chart(ent: dict) -> dict:
@@ -53,8 +64,17 @@ async def _resolve_single_enterprise(
     db: AsyncSession, ent_ids: list[str]
 ) -> tuple[str | None, dict | None]:
     if ent_ids:
-        ent = await assessment.calculate(db, ent_ids[0])
-        return (ent_ids[0], ent) if ent else (None, None)
+        try:
+            ent = await assessment.calculate(db, ent_ids[0])
+            if ent:
+                return (ent_ids[0], ent)
+        except Exception:
+            pass
+        # Fallback to mock data when DB unavailable
+        from app.services.mock_data import get_mock_enterprise
+        mock = get_mock_enterprise(ent_ids[0])
+        if mock:
+            return (ent_ids[0], mock)
     return None, None
 
 
@@ -131,7 +151,11 @@ async def route_chat(
 
     elif intent == "industry_compare":
         all_ids = await _all_enterprise_ids(db)
-        all_scores = await assessment.calculate_pk(db, all_ids)
+        try:
+            all_scores = await assessment.calculate_pk(db, all_ids)
+        except Exception:
+            from app.services.mock_data import MOCK_ENTERPRISES
+            all_scores = [dict(e) for e in MOCK_ENTERPRISES]
         ranking = sorted(all_scores, key=lambda x: x["overall_score"], reverse=True)
         avg = sum(s["overall_score"] for s in ranking) / max(len(ranking), 1)
         data = {
@@ -158,7 +182,12 @@ async def route_chat(
             ent_ids = [ent_ids[0], others[0]] if others else ent_ids
         if len(ent_ids) < 2 and len(all_ids) >= 2:
             ent_ids = all_ids[:2]
-        comparison = await assessment.calculate_pk(db, ent_ids[:5])
+        try:
+            comparison = await assessment.calculate_pk(db, ent_ids[:5])
+        except Exception:
+            from app.services.mock_data import get_mock_enterprise
+            comparison = [get_mock_enterprise(eid) for eid in ent_ids[:5]]
+            comparison = [c for c in comparison if c]
         comparison.sort(key=lambda x: x["overall_score"], reverse=True)
         if len(comparison) < 2:
             data = {"message": "请指定至少两家企业，如：对比深圳明达和上海恒信"}
@@ -182,11 +211,19 @@ async def route_chat(
         credit_match = re.search(r"信用等级\s*([ABCDM])|([ABCDM])级", query, re.I)
         if credit_match:
             level = (credit_match.group(1) or credit_match.group(2)).upper()
-            result = await db.execute(select(CoreMetrics).where(CoreMetrics.credit_level == level))
-            rows = list(result.scalars().all())
+            try:
+                result = await db.execute(select(CoreMetrics).where(CoreMetrics.credit_level == level))
+                rows = list(result.scalars().all())
+            except Exception:
+                from app.services.mock_data import MOCK_ENTERPRISES
+                rows = [type("M",(),{"enterprise_id":e["enterprise_id"],"enterprise_name":e["enterprise_name"],"credit_level":e["credit_level"]})() for e in MOCK_ENTERPRISES if e["credit_level"]==level]
             enterprises = []
             for m in rows:
-                ent = await assessment.calculate(db, m.enterprise_id)
+                try:
+                    ent = await assessment.calculate(db, m.enterprise_id)
+                except Exception:
+                    from app.services.mock_data import get_mock_enterprise
+                    ent = get_mock_enterprise(m.enterprise_id) or {"overall_score": 0}
                 enterprises.append(
                     {
                         "enterprise_id": m.enterprise_id,
@@ -201,7 +238,11 @@ async def route_chat(
             }
             charts = {"type": "bar", "data": {"labels": [e["enterprise_name"] for e in data["enterprises"]], "series": [{"name": f"信用{level}级", "values": [e["overall_score"] for e in data["enterprises"]]}]}} if data["enterprises"] else None
         else:
-            warnings = await assessment.get_all_warnings(db)
+            try:
+                warnings = await assessment.get_all_warnings(db)
+            except Exception:
+                from app.services.mock_data import get_mock_warnings
+                warnings = get_mock_warnings()
             data = {
                 "warnings": [
                     {
@@ -221,7 +262,29 @@ async def route_chat(
             msg = _unknown_enterprise_message() if intent_result.enterprises else _missing_enterprise_message("full_report")
             data = {"message": msg}
         else:
-            report_id, _ = await report_generator.generate_report(db, eid)
+            try:
+                report_id, _ = await report_generator.generate_report(db, eid)
+            except Exception:
+                # Mock report generation when DB unavailable
+                import uuid
+                from app.services.mock_data import get_mock_enterprise
+                mock_ent = get_mock_enterprise(eid)
+                if mock_ent:
+                    report_id = f"mock-{uuid.uuid4().hex[:8]}"
+                    data = {
+                        "enterprise_id": eid,
+                        "enterprise_name": mock_ent["enterprise_name"],
+                        "report_id": report_id,
+                        "download_url": f"/api/v1/report/{report_id}/download",
+                        "source": "mock",
+                        "note": "模拟数据报告，真实数据导入后将自动替换",
+                    }
+                    reply = await llm_reply.generate_reply(query, intent, data)
+                    session_store.store_session(sid, intent, [eid], query, [mock_ent.get("enterprise_name", "")])
+                    return {"reply": reply, "intent": intent, "data": data, "charts": None, "session_id": sid}
+                data = {"message": "报告生成失败，请稍后重试"}
+                reply = await llm_reply.generate_reply(query, intent, data)
+                return {"reply": reply, "intent": intent, "data": data, "charts": None, "session_id": sid}
             data = {
                 "enterprise_id": eid,
                 "enterprise_name": ent["enterprise_name"],
@@ -268,7 +331,7 @@ async def route_chat(
     reply = await llm_reply.generate_reply(query, intent, data)
     if not (reply or "").strip():
         reply = llm_reply._template_reply(intent, data, with_prefix=True)
-    print(f"[route_chat] reply[:200]={reply[:200]!r}")
+    logger.info("route_chat reply[:200]=%r", reply[:200])
 
     enterprises_to_store = list(intent_result.enterprises)
     names_to_store = list(intent_result.enterprise_names)

@@ -3,17 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
-  getAllEnterprises,
-  getEnterprisePK,
-  type EnterpriseAssessment,
-} from "@/lib/api";
-import { RISK_LEVEL_COLORS, RISK_LEVEL_TEXT } from "@/lib/labels";
+  fetchEnterprises,
+  fetchEnterprisePK,
+  getInstantEnterprises,
+} from "@/lib/dataSource";
+import type { EnterpriseAssessment } from "@/lib/api";
+import { getInvoiceEdges } from "@/lib/api";
+import {
+  DIMENSION_LABELS,
+  RISK_LEVEL_COLORS,
+} from "@/lib/labels";
+import { mulberry32 } from "@/lib/mockEnterprises";
+import { SEED_ENTERPRISE_A, SEED_ID_A } from "@/lib/constants";
+import { RISK_CHART_COLORS } from "@/lib/theme";
+import {
+  CANVAS_BG,
+  CANVAS_CENTER_FILL,
+  NODE_RISK_RGB,
+  linkRiskRgb,
+  HOVER_RING_COLOR,
+  CENTER_BORDER_COLOR,
+  CLUSTER_LABEL_COLOR,
+  rgbFill,
+  whiteAlpha,
+  previewLinkColor,
+} from "@/lib/canvasTheme";
 import { cn } from "@/lib/utils";
-import { ArrowRight, RotateCcw, Search, X } from "lucide-react";
+import {
+  ArrowRight,
+  Minus,
+  Plus,
+  RotateCcw,
+  Search,
+  Download,
+  Filter,
+  Link2,
+  AlertTriangle,
+  Building2,
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════════
-   数据层 — 模拟交易边
+   数据层 — 模拟交易边。真实发票边接入点在 buildPreviewGraph()，
+   优先真实发票API，回退本地mock。loadRealEdges() 在组件挂载时自动调用。
    ═══════════════════════════════════════════════════════════════ */
 
 interface MockEdge {
@@ -22,19 +56,12 @@ interface MockEdge {
   amount: number;
 }
 
-function mulberry32(seed: number) {
-  return () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 function buildMockEdges(): MockEdge[] {
   const rng = mulberry32(42);
-  const allIds = Array.from({ length: 200 }, (_, i) => `ENT${String(i + 1).padStart(3, "0")}`);
+  const allIds = Array.from(
+    { length: 200 },
+    (_, i) => `ENT${String(i + 1).padStart(3, "0")}`,
+  );
   const shuffled = [...allIds].sort(() => rng() - 0.5);
   const active = new Set(shuffled.slice(0, 80));
   active.add("ENT001");
@@ -49,7 +76,11 @@ function buildMockEdges(): MockEdge[] {
     const key = `${from}->${to}`;
     if (seen.has(key)) return;
     seen.add(key);
-    edges.push({ from, to, amount: Math.floor(10_000 + rng() * 49_990_000) });
+    edges.push({
+      from,
+      to,
+      amount: Math.floor(10_000 + rng() * 49_990_000),
+    });
   };
 
   for (const id of activeList) {
@@ -79,19 +110,40 @@ function buildMockEdges(): MockEdge[] {
   return edges.slice(0, 2000);
 }
 
-const MOCK_EDGES = buildMockEdges();
-const PREVIEW_EDGE_COUNT = 2347;
+// 优先真实发票边 API，回退 mock
+let CURRENT_EDGES = buildMockEdges();
+let EDGES_SOURCE: "mock" | "live" = "mock";
+
+async function loadRealEdges(): Promise<void> {
+  try {
+    const edges = await getInvoiceEdges();
+    if (edges.length > 0) {
+      CURRENT_EDGES = edges.map((e) => ({ from: e.source_id, to: e.target_id, amount: e.amount }));
+      EDGES_SOURCE = "live";
+    }
+  } catch { /* keep mock */ }
+}
 
 /* ═══════════════════════════════════════════════════════════════
-   星团预览
+   颜色系统 — 全部复用全局 RISK_CHART_COLORS / NODE_RISK_RGB
+   ═══════════════════════════════════════════════════════════════ */
+
+const RISK_RGB = NODE_RISK_RGB;
+
+function riskRgb(risk: string): [number, number, number] {
+  return RISK_RGB[risk] ?? RISK_RGB["中等风险"];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   星团预览（完全保留数据结构与旋转逻辑）
    ═══════════════════════════════════════════════════════════════ */
 
 const CLUSTER_DEFS = [
-  { id: 0, name: "制造", color: [120, 200, 255] as const, industries: ["制造业", "医药"] },
-  { id: 1, name: "科技", color: [100, 220, 255] as const, industries: ["信息技术", "新能源"] },
-  { id: 2, name: "贸易", color: [255, 200, 120] as const, industries: ["批发零售", "餐饮", "金融"] },
-  { id: 3, name: "物流", color: [180, 255, 180] as const, industries: ["交通运输"] },
-  { id: 4, name: "建筑", color: [255, 160, 120] as const, industries: ["建筑业"] },
+  { id: 0, name: "制造", industries: ["制造业", "医药"] },
+  { id: 1, name: "科技", industries: ["信息技术", "新能源"] },
+  { id: 2, name: "贸易", industries: ["批发零售", "餐饮", "金融"] },
+  { id: 3, name: "物流", industries: ["交通运输"] },
+  { id: 4, name: "建筑", industries: ["建筑业"] },
 ] as const;
 
 const PREVIEW_ORBIT = 380;
@@ -107,8 +159,8 @@ const INERTIA_STOP = 0.1;
 const RING_BASE = 200;
 
 const EXAMPLE_BUTTONS = [
-  { label: "深圳明达", query: "深圳明达" },
-  { label: "ENT001", query: "ENT001" },
+  { label: SEED_ENTERPRISE_A, query: SEED_ENTERPRISE_A },
+  { label: SEED_ID_A, query: SEED_ID_A },
   { label: "制造业星团", query: "__cluster_manufacturing__" },
 ] as const;
 
@@ -137,35 +189,19 @@ interface PreviewGraph {
   posMap: Map<string, { x: number; y: number }>;
 }
 
-interface Meteor {
-  cluster: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-}
-
 function clusterOf(industry: string): number {
-  const hit = CLUSTER_DEFS.find((c) => (c.industries as readonly string[]).includes(industry));
+  const hit = CLUSTER_DEFS.find((c) =>
+    (c.industries as readonly string[]).includes(industry),
+  );
   return hit?.id ?? 0;
 }
 
 function clusterCenter(i: number): { x: number; y: number } {
   const angle = (i / CLUSTER_DEFS.length) * Math.PI * 2 - Math.PI / 2;
-  return { x: Math.cos(angle) * PREVIEW_ORBIT, y: Math.sin(angle) * PREVIEW_ORBIT };
-}
-
-function riskRgb(risk: string): [number, number, number] {
-  const m: Record<string, [number, number, number]> = {
-    低风险: [52, 211, 153],
-    中低风险: [96, 165, 250],
-    中等风险: [251, 191, 36],
-    中高风险: [251, 146, 60],
-    高风险: [244, 114, 182],
+  return {
+    x: Math.cos(angle) * PREVIEW_ORBIT,
+    y: Math.sin(angle) * PREVIEW_ORBIT,
   };
-  return m[risk] ?? [200, 200, 210];
 }
 
 function hashId(id: string): number {
@@ -174,24 +210,35 @@ function hashId(id: string): number {
   return h;
 }
 
-function buildPreviewGraph(enterprises: EnterpriseAssessment[]): PreviewGraph {
+function buildPreviewGraph(
+  enterprises: EnterpriseAssessment[],
+): PreviewGraph {
   const byCluster: EnterpriseAssessment[][] = CLUSTER_DEFS.map(() => []);
-  enterprises.forEach((ent) => byCluster[clusterOf(ent.industry_l1 ?? "制造业")].push(ent));
+  enterprises.forEach((ent) =>
+    byCluster[clusterOf(ent.industry_l1 ?? "制造业")].push(ent),
+  );
 
   const nodes: PreviewNode[] = [];
 
   byCluster.forEach((group, ci) => {
     const center = clusterCenter(ci);
-    const sorted = [...group].sort((a, b) => a.enterprise_id.localeCompare(b.enterprise_id));
+    const sorted = [...group].sort((a, b) =>
+      a.enterprise_id.localeCompare(b.enterprise_id),
+    );
     const coreCount = Math.max(3, Math.floor(sorted.length * 0.35));
 
     sorted.forEach((ent, i) => {
       const h = hashId(ent.enterprise_id);
       const isCore = i < coreCount;
       const layer: "core" | "outer" = isCore ? "core" : "outer";
-      const angle = (i / Math.max(sorted.length, 1)) * Math.PI * 2 + (h % 360) * 0.014;
-      const distRatio = isCore ? Math.pow((h % 1000) / 1000, 0.55) : 0.55 + ((h % 700) / 700) * 0.45;
-      const spread = isCore ? CLUSTER_CORE : CLUSTER_CORE + CLUSTER_OUTER * distRatio;
+      const angle =
+        (i / Math.max(sorted.length, 1)) * Math.PI * 2 + (h % 360) * 0.014;
+      const distRatio = isCore
+        ? Math.pow((h % 1000) / 1000, 0.55)
+        : 0.55 + ((h % 700) / 700) * 0.45;
+      const spread = isCore
+        ? CLUSTER_CORE
+        : CLUSTER_CORE + CLUSTER_OUTER * distRatio;
       const jitter = ((h % 50) - 25) * 0.15;
 
       nodes.push({
@@ -222,19 +269,23 @@ function buildPreviewGraph(enterprises: EnterpriseAssessment[]): PreviewGraph {
   };
 
   byCluster.forEach((group) => {
-    const idxs = group.map((e) => idToIdx.get(e.enterprise_id)!).filter((x) => x !== undefined);
+    const idxs = group
+      .map((e) => idToIdx.get(e.enterprise_id)!)
+      .filter((x) => x !== undefined);
     idxs.forEach((aIdx, i) => {
-      for (let k = 1; k <= 4; k++) addLink(aIdx, idxs[(i + k) % idxs.length], false);
+      for (let k = 1; k <= 4; k++)
+        addLink(aIdx, idxs[(i + k) % idxs.length], false);
       idxs.forEach((bIdx) => {
         if (aIdx >= bIdx) return;
         const na = nodes[aIdx];
         const nb = nodes[bIdx];
-        if (Math.hypot(na.x - nb.x, na.y - nb.y) < 55) addLink(aIdx, bIdx, false);
+        if (Math.hypot(na.x - nb.x, na.y - nb.y) < 55)
+          addLink(aIdx, bIdx, false);
       });
     });
   });
 
-  MOCK_EDGES.forEach((e) => {
+  CURRENT_EDGES.forEach((e) => {
     const a = idToIdx.get(e.from);
     const b = idToIdx.get(e.to);
     if (a === undefined || b === undefined) return;
@@ -257,14 +308,23 @@ function buildPreviewGraph(enterprises: EnterpriseAssessment[]): PreviewGraph {
   return { nodes, links, idToIdx, posMap };
 }
 
-function fitPreviewScale(nodes: PreviewNode[], w: number, h: number): number {
+function fitPreviewScale(
+  nodes: PreviewNode[],
+  w: number,
+  h: number,
+): number {
   let maxR = PREVIEW_ORBIT + CLUSTER_CORE + CLUSTER_OUTER + 60;
-  nodes.forEach((n) => { maxR = Math.max(maxR, Math.hypot(n.x, n.y) + 40); });
-  return Math.min(Math.max(Math.min(w, h) / (maxR * 2.1), 0.45), 1.15);
+  nodes.forEach((n) => {
+    maxR = Math.max(maxR, Math.hypot(n.x, n.y) + 40);
+  });
+  return Math.min(
+    Math.max(Math.min(w, h) / (maxR * 2.1), 0.45),
+    1.15,
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   子图
+   子图（完全保留数据结构与布局算法）
    ═══════════════════════════════════════════════════════════════ */
 
 type NodeRole = "center" | "seller" | "buyer";
@@ -295,7 +355,6 @@ interface GraphLink {
   fromIdx: number;
   toIdx: number;
   amount: number;
-  particleT: number;
   opacity: number;
 }
 
@@ -313,10 +372,14 @@ interface Viewport {
 }
 
 function edgesForCenter(centerId: string): MockEdge[] {
-  return MOCK_EDGES.filter((e) => e.from === centerId || e.to === centerId);
+  return CURRENT_EDGES.filter((e) => e.from === centerId || e.to === centerId);
 }
 
-function roleOf(centerId: string, otherId: string, edges: MockEdge[]): NodeRole {
+function roleOf(
+  centerId: string,
+  otherId: string,
+  edges: MockEdge[],
+): NodeRole {
   let asSeller = 0;
   let asBuyer = 0;
   edges.forEach((e) => {
@@ -328,7 +391,10 @@ function roleOf(centerId: string, otherId: string, edges: MockEdge[]): NodeRole 
 }
 
 function volumeOf(id: string, edges: MockEdge[]): number {
-  return edges.reduce((s, e) => (e.from === id || e.to === id ? s + e.amount : s), 0);
+  return edges.reduce(
+    (s, e) => (e.from === id || e.to === id ? s + e.amount : s),
+    0,
+  );
 }
 
 function roleLabel(role: NodeRole): string {
@@ -354,7 +420,11 @@ function buildSubGraph(
   });
 
   const relatedList = [...relatedIds].sort();
-  const maxVol = Math.max(volumeOf(centerId, rawEdges), ...relatedList.map((id) => volumeOf(id, rawEdges)), 1);
+  const maxVol = Math.max(
+    volumeOf(centerId, rawEdges),
+    ...relatedList.map((id) => volumeOf(id, rawEdges)),
+    1,
+  );
   const centerStart = previewPos.get(centerId) ?? { x: 0, y: 0 };
 
   const nodes: GraphNode[] = [
@@ -412,29 +482,41 @@ function buildSubGraph(
   const idToIdx = new Map(nodes.map((n, i) => [n.id, i]));
   const links: GraphLink[] = rawEdges
     .filter((e) => idToIdx.has(e.from) && idToIdx.has(e.to))
-    .map((e, i) => ({
+    .map((e) => ({
       from: e.from,
       to: e.to,
       fromIdx: idToIdx.get(e.from)!,
       toIdx: idToIdx.get(e.to)!,
       amount: e.amount,
-      particleT: (i % 10) / 10,
       opacity: 0,
     }));
 
   return { centerId, nodes, links, idToIdx };
 }
 
-function fitGraphScale(nodes: GraphNode[], w: number, h: number): number {
+function fitGraphScale(
+  nodes: GraphNode[],
+  w: number,
+  h: number,
+): number {
   if (nodes.length === 0) return 1;
   let maxR = 0;
   nodes.forEach((n) => {
-    maxR = Math.max(maxR, Math.hypot(n.targetX, n.targetY) + n.radius * 4 + 50);
+    maxR = Math.max(
+      maxR,
+      Math.hypot(n.targetX, n.targetY) + n.radius * 4 + 50,
+    );
   });
-  return Math.min(Math.max(Math.min(w, h) / (maxR * 2.1), ZOOM_MIN), 1.4);
+  return Math.min(
+    Math.max(Math.min(w, h) / (maxR * 2.1), ZOOM_MIN),
+    1.4,
+  );
 }
 
-function findEnterprise(query: string, registry: Map<string, EnterpriseAssessment>): EnterpriseAssessment | null {
+function findEnterprise(
+  query: string,
+  registry: Map<string, EnterpriseAssessment>,
+): EnterpriseAssessment | null {
   const q = query.trim();
   if (!q) return null;
   if (registry.has(q.toUpperCase())) return registry.get(q.toUpperCase())!;
@@ -444,11 +526,19 @@ function findEnterprise(query: string, registry: Map<string, EnterpriseAssessmen
   return null;
 }
 
-function findManufacturingSeed(registry: Map<string, EnterpriseAssessment>): EnterpriseAssessment | null {
+function findManufacturingSeed(
+  registry: Map<string, EnterpriseAssessment>,
+): EnterpriseAssessment | null {
   const candidates = [...registry.values()].filter(
-    (e) => clusterOf(e.industry_l1 ?? "") === 0 && edgesForCenter(e.enterprise_id).length > 0,
+    (e) =>
+      clusterOf(e.industry_l1 ?? "") === 0 &&
+      edgesForCenter(e.enterprise_id).length > 0,
   );
-  return candidates.find((e) => e.enterprise_id === "ENT001") ?? candidates[0] ?? null;
+  return (
+    candidates.find((e) => e.enterprise_id === "ENT001") ??
+    candidates[0] ??
+    null
+  );
 }
 
 function easeOutCubic(t: number): number {
@@ -462,12 +552,48 @@ function formatAmount(n: number): string {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   骨架屏
+   ═══════════════════════════════════════════════════════════════ */
+
+function NetworkSkeleton() {
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3">
+        <Skeleton className="h-6 w-32 rounded-md" />
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-24 rounded-lg" />
+          <Skeleton className="h-8 w-24 rounded-lg" />
+          <Skeleton className="h-8 w-16 rounded-lg" />
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 gap-3">
+        <div className="flex flex-[3] items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.01] min-w-0">
+          <Skeleton className="aspect-square h-[min(50%,20rem)] w-[min(50%,20rem)] rounded-full" />
+        </div>
+        <div className="hidden w-64 shrink-0 space-y-3 lg:block xl:w-72">
+          <Skeleton className="h-28 rounded-lg" />
+          <Skeleton className="h-36 rounded-lg" />
+          <Skeleton className="min-h-[8rem] flex-1 rounded-lg" />
+        </div>
+      </div>
+
+      <div className="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-lg sm:h-24" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    主组件
    ═══════════════════════════════════════════════════════════════ */
 
 export default function NetworkGraph() {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const previewRef = useRef<PreviewGraph | null>(null);
@@ -478,12 +604,21 @@ export default function NetworkGraph() {
   const velocityRef = useRef({ vx: 0, vy: 0 });
   const previewAngleRef = useRef(0);
   const previewFadeRef = useRef(1);
-  const fadeAnimRef = useRef<{ from: number; to: number; start: number } | null>(null);
-  const transitionRef = useRef<{ start: number; active: boolean } | null>(null);
-  const scaleAnimRef = useRef<{ from: number; to: number; start: number } | null>(null);
+  const fadeAnimRef = useRef<{
+    from: number;
+    to: number;
+    start: number;
+  } | null>(null);
+  const transitionRef = useRef<{
+    start: number;
+    active: boolean;
+  } | null>(null);
+  const scaleAnimRef = useRef<{
+    from: number;
+    to: number;
+    start: number;
+  } | null>(null);
 
-  const meteorsRef = useRef<Meteor[]>([]);
-  const nextMeteorAtRef = useRef(performance.now() + 5000 + Math.random() * 5000);
   const lastFrameRef = useRef(0);
   const sizeRef = useRef({ w: 800, h: 600 });
   const rafRef = useRef(0);
@@ -508,7 +643,65 @@ export default function NetworkGraph() {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [mode, setMode] = useState<"preview" | "graph">("preview");
   const [registryReady, setRegistryReady] = useState(false);
-  const [panelVisible, setPanelVisible] = useState(false);
+  const [edgesReady, setEdgesReady] = useState(false);
+
+  // 启动时异步加载真实发票边，完成后触发预览重建
+  useEffect(() => {
+    loadRealEdges().then(() => setEdgesReady(true));
+  }, []);
+
+  // 真实边加载完成后重建预览图谱
+  useEffect(() => {
+    if (!edgesReady || registryRef.current.size === 0) return;
+    const ents = [...registryRef.current.values()];
+    if (ents.length > 0) {
+      previewRef.current = buildPreviewGraph(ents);
+      const { w, h } = sizeRef.current;
+      if (w > 0 && h > 0 && previewRef.current) {
+        viewportRef.current.scale = fitPreviewScale(previewRef.current.nodes, w, h);
+      }
+    }
+  }, [edgesReady]);
+
+  const applyRegistry = useCallback((ents: EnterpriseAssessment[]) => {
+    const map = new Map(ents.map((e) => [e.enterprise_id, e]));
+    registryRef.current = map;
+    previewRef.current = buildPreviewGraph(ents);
+    const { w, h } = sizeRef.current;
+    if (w > 0 && h > 0 && previewRef.current) {
+      viewportRef.current.scale = fitPreviewScale(
+        previewRef.current.nodes,
+        w,
+        h,
+      );
+    }
+    setRegistryReady(true);
+  }, []);
+
+  /* 筛选状态 */
+  const [riskFilter, setRiskFilter] = useState("全部");
+  const [industryFilter, setIndustryFilter] = useState("全部");
+
+  /* 根据筛选条件过滤预览图谱节点 */
+  const filteredPreviewIds = useMemo(() => {
+    const preview = previewRef.current;
+    const registry = registryRef.current;
+    if (!preview || registry.size === 0) return new Set(preview?.nodes.map((n) => n.id) ?? []);
+    const riskActive = riskFilter !== "全部";
+    const indActive = industryFilter !== "全部";
+    if (!riskActive && !indActive) return new Set(preview.nodes.map((n) => n.id));
+    const ids = new Set<string>();
+    preview.nodes.forEach((n) => {
+      const ent = registry.get(n.id);
+      if (!ent) { ids.add(n.id); return; }
+      if (riskActive && ent.risk_level !== riskFilter) return;
+      if (indActive && ent.industry_l1 !== industryFilter) return;
+      ids.add(n.id);
+    });
+    return ids;
+  }, [riskFilter, industryFilter, registryReady]);
+
+  /* ── 派生数据 ── */
 
   const centerNode = useMemo(() => {
     const g = graphRef.current;
@@ -520,14 +713,23 @@ export default function NetworkGraph() {
     const g = graphRef.current;
     if (!g || !centerId) return [];
     const edges = edgesForCenter(centerId);
-    const map = new Map<string, { role: NodeRole; amount: number; name: string }>();
+    const map = new Map<
+      string,
+      { role: NodeRole; amount: number; name: string; risk: string; score: number }
+    >();
     edges.forEach((e) => {
       const other = e.from === centerId ? e.to : e.from;
       const node = g.nodes.find((n) => n.id === other);
       if (!node) return;
       const prev = map.get(other);
       if (!prev || e.amount > prev.amount) {
-        map.set(other, { role: node.role, amount: e.amount, name: node.name });
+        map.set(other, {
+          role: node.role,
+          amount: e.amount,
+          name: node.name,
+          risk: node.risk,
+          score: node.score,
+        });
       }
     });
     return [...map.entries()]
@@ -536,35 +738,83 @@ export default function NetworkGraph() {
       .slice(0, 5);
   }, [centerId, mode]);
 
+  /* 图谱统计 */
+  const graphStats = useMemo(() => {
+    const g = graphRef.current;
+    if (!g || mode !== "graph") {
+      if (previewRef.current) {
+        const visibleCount = filteredPreviewIds.size;
+        const totalNodes = previewRef.current.nodes.length;
+        return {
+          totalEdges: CURRENT_EDGES.length,
+          totalNodes: visibleCount < totalNodes ? `${visibleCount} / ${totalNodes}` : totalNodes,
+          highRiskLinks: (() => {
+            // 从 registry 中计算实际高风险边数
+            const registry = registryRef.current;
+            if (registry.size === 0) return 0;
+            let count = 0;
+            for (const edge of CURRENT_EDGES) {
+              const a = registry.get(edge.from);
+              const b = registry.get(edge.to);
+              if (a?.risk_level?.includes("高") || b?.risk_level?.includes("高")) count++;
+            }
+            return count;
+          })(),
+        };
+      }
+      return { totalEdges: 0, totalNodes: 0, highRiskLinks: 0 };
+    }
+    const highRisk = g.links.filter((l) => {
+      const a = g.nodes[l.fromIdx];
+      const b = g.nodes[l.toIdx];
+      return a?.risk?.includes("高") || b?.risk?.includes("高");
+    }).length;
+    return {
+      totalEdges: g.links.length,
+      totalNodes: g.nodes.length,
+      highRiskLinks: highRisk,
+    };
+  }, [mode, centerId]);
+
+  /* ── Canvas 渲染控制 ── */
+
   const animatePreviewFade = useCallback((to: number) => {
-    fadeAnimRef.current = { from: previewFadeRef.current, to, start: performance.now() };
+    fadeAnimRef.current = {
+      from: previewFadeRef.current,
+      to,
+      start: performance.now(),
+    };
   }, []);
 
   const animateScale = useCallback((to: number) => {
-    scaleAnimRef.current = { from: viewportRef.current.scale, to, start: performance.now() };
+    scaleAnimRef.current = {
+      from: viewportRef.current.scale,
+      to,
+      start: performance.now(),
+    };
   }, []);
+
+  /* ── 数据加载 ── */
 
   const loadRegistry = useCallback(async () => {
-    const ents = await getAllEnterprises();
-    const map = new Map(ents.map((e) => [e.enterprise_id, e]));
-    registryRef.current = map;
-    previewRef.current = buildPreviewGraph(ents);
-    const { w, h } = sizeRef.current;
-    if (w > 0 && h > 0 && previewRef.current) {
-      viewportRef.current.scale = fitPreviewScale(previewRef.current.nodes, w, h);
-    }
-    setRegistryReady(true);
+    try {
+      const ents = await fetchEnterprises();
+      applyRegistry(ents);
 
-    const missing = new Set<string>();
-    MOCK_EDGES.forEach((e) => {
-      if (!map.has(e.from)) missing.add(e.from);
-      if (!map.has(e.to)) missing.add(e.to);
-    });
-    if (missing.size > 0) {
-      const extra = await getEnterprisePK([...missing].slice(0, 40));
-      extra.forEach((e) => map.set(e.enterprise_id, e));
+      const map = registryRef.current;
+      const missing = new Set<string>();
+      CURRENT_EDGES.forEach((e) => {
+        if (!map.has(e.from)) missing.add(e.from);
+        if (!map.has(e.to)) missing.add(e.to);
+      });
+      if (missing.size > 0) {
+        const extra = await fetchEnterprisePK([...missing].slice(0, 40));
+        extra.forEach((e) => map.set(e.enterprise_id, e));
+      }
+    } catch {
+      applyRegistry(getInstantEnterprises());
     }
-  }, []);
+  }, [applyRegistry]);
 
   const showSubGraph = useCallback(
     async (targetId: string) => {
@@ -573,7 +823,7 @@ export default function NetworkGraph() {
 
       let entMap = registryRef.current;
       if (!entMap.has(targetId)) {
-        const [ent] = await getEnterprisePK([targetId]);
+        const [ent] = await fetchEnterprisePK([targetId]);
         if (ent) entMap = new Map(entMap).set(targetId, ent);
       }
 
@@ -585,7 +835,7 @@ export default function NetworkGraph() {
 
       const needFetch = [...relatedIds].filter((id) => !entMap.has(id));
       for (let i = 0; i < needFetch.length; i += 50) {
-        const fetched = await getEnterprisePK(needFetch.slice(i, i + 50));
+        const fetched = await fetchEnterprisePK(needFetch.slice(i, i + 50));
         fetched.forEach((e) => entMap.set(e.enterprise_id, e));
       }
       registryRef.current = entMap;
@@ -596,7 +846,10 @@ export default function NetworkGraph() {
       const sin = Math.sin(angle);
       const rotatedPos = new Map<string, { x: number; y: number }>();
       previewPos.forEach((p, id) => {
-        rotatedPos.set(id, { x: p.x * cos - p.y * sin, y: p.x * sin + p.y * cos });
+        rotatedPos.set(id, {
+          x: p.x * cos - p.y * sin,
+          y: p.x * sin + p.y * cos,
+        });
       });
 
       const sg = buildSubGraph(targetId, entMap, rotatedPos);
@@ -605,7 +858,6 @@ export default function NetworkGraph() {
         graphRef.current = null;
         setCenterId(null);
         setMode("preview");
-        setPanelVisible(false);
         animatePreviewFade(1);
         return;
       }
@@ -617,7 +869,6 @@ export default function NetworkGraph() {
       graphRef.current = sg;
       setCenterId(targetId);
       setMode("graph");
-      setPanelVisible(true);
       transitionRef.current = { start: performance.now(), active: true };
 
       const { w, h } = sizeRef.current;
@@ -646,7 +897,9 @@ export default function NetworkGraph() {
         setSearchError("未找到匹配企业，请尝试企业名称或编号");
         return;
       }
-      setSearch(found.enterprise_name.includes(query) ? query : found.enterprise_name);
+      setSearch(
+        found.enterprise_name.includes(query) ? query : found.enterprise_name,
+      );
       await showSubGraph(found.enterprise_id);
     },
     [showSubGraph],
@@ -681,25 +934,33 @@ export default function NetworkGraph() {
     setHoverId(null);
     hoverRef.current = null;
     setMode("preview");
-    setPanelVisible(false);
     setSearchError("");
+    setSearch("");
     previewFadeRef.current = 1;
     fadeAnimRef.current = null;
     transitionRef.current = null;
     scaleAnimRef.current = null;
     velocityRef.current = { vx: 0, vy: 0 };
     const { w, h } = sizeRef.current;
-    if (previewRef.current) viewportRef.current.scale = fitPreviewScale(previewRef.current.nodes, w, h);
+    if (previewRef.current)
+      viewportRef.current.scale = fitPreviewScale(
+        previewRef.current.nodes,
+        w,
+        h,
+      );
     viewportRef.current.panX = 0;
     viewportRef.current.panY = 0;
   }, []);
 
   useEffect(() => {
+    applyRegistry(getInstantEnterprises());
     loadRegistry().catch(() => setSearchError("企业名录加载失败"));
-  }, [loadRegistry]);
+  }, [applyRegistry, loadRegistry]);
+
+  /* ── Canvas 尺寸 ── */
 
   useEffect(() => {
-    const el = containerRef.current;
+    const el = canvasWrapRef.current;
     if (!el) return;
     const update = () => {
       const rect = el.getBoundingClientRect();
@@ -717,12 +978,20 @@ export default function NetworkGraph() {
       }
       if (mode === "graph" && graphRef.current) {
         if (!scaleAnimRef.current) {
-          viewportRef.current.scale = fitGraphScale(graphRef.current.nodes, width, height);
+          viewportRef.current.scale = fitGraphScale(
+            graphRef.current.nodes,
+            width,
+            height,
+          );
         }
       } else if (previewRef.current) {
-        viewportRef.current.scale = fitPreviewScale(previewRef.current.nodes, width, height);
-      }
-    };
+        viewportRef.current.scale = fitPreviewScale(
+          previewRef.current.nodes,
+          width,
+          height,
+      );
+    }
+  };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -732,6 +1001,8 @@ export default function NetworkGraph() {
       window.removeEventListener("resize", update);
     };
   }, [registryReady, mode]);
+
+  /* ── 坐标转换 ── */
 
   const screenToWorld = useCallback((sx: number, sy: number) => {
     const { w, h } = sizeRef.current;
@@ -766,6 +1037,10 @@ export default function NetworkGraph() {
     [mode, screenToWorld],
   );
 
+  /* ══════════════════════════════════════
+     Canvas 渲染循环（核心保留，移除发光/粒子）
+     ══════════════════════════════════════ */
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -773,41 +1048,30 @@ export default function NetworkGraph() {
     if (!ctx) return;
     const dpr = Math.min(devicePixelRatio, 2);
 
-    const spawnMeteor = (now: number) => {
-      const ci = Math.floor(Math.random() * CLUSTER_DEFS.length);
-      const cc = clusterCenter(ci);
-      const angle = Math.random() * Math.PI * 2;
-      const dist = CLUSTER_CORE * 0.3;
-      const speed = 2.8 + Math.random() * 2.2;
-      const dir = angle + Math.PI * 0.35;
-      meteorsRef.current.push({
-        cluster: ci,
-        x: cc.x + Math.cos(angle) * dist,
-        y: cc.y + Math.sin(angle) * dist,
-        vx: Math.cos(dir) * speed,
-        vy: Math.sin(dir) * speed,
-        life: 0,
-        maxLife: 55 + Math.random() * 35,
-      });
-      nextMeteorAtRef.current = now + 5000 + Math.random() * 5000;
-    };
-
     const draw = (now: number) => {
       rafRef.current = requestAnimationFrame(draw);
-      const dt = lastFrameRef.current ? Math.min(now - lastFrameRef.current, 32) : 16;
+      const dt = lastFrameRef.current
+        ? Math.min(now - lastFrameRef.current, 32)
+        : 16;
       lastFrameRef.current = now;
 
       const { w, h } = sizeRef.current;
       const vp = viewportRef.current;
       const preview = previewRef.current;
       const g = graphRef.current;
-      const isPreview = mode === "preview" || previewFadeRef.current > 0.06;
+      const isPreview =
+        mode === "preview" || previewFadeRef.current > 0.06;
 
       if (isPreview && !transitionRef.current?.active) {
         previewAngleRef.current += ROT_SPEED * (dt / 1000);
       }
 
-      if (!dragRef.current.active && Math.hypot(velocityRef.current.vx, velocityRef.current.vy) > INERTIA_STOP) {
+      /* 惯性 */
+      if (
+        !dragRef.current.active &&
+        Math.hypot(velocityRef.current.vx, velocityRef.current.vy) >
+          INERTIA_STOP
+      ) {
         vp.panX += velocityRef.current.vx;
         vp.panY += velocityRef.current.vy;
         velocityRef.current.vx *= INERTIA_DECAY;
@@ -817,6 +1081,7 @@ export default function NetworkGraph() {
         velocityRef.current.vy = 0;
       }
 
+      /* 淡入淡出 */
       if (fadeAnimRef.current) {
         const { from, to, start } = fadeAnimRef.current;
         const t = Math.min(1, (now - start) / PREVIEW_FADE_MS);
@@ -824,6 +1089,7 @@ export default function NetworkGraph() {
         if (t >= 1) fadeAnimRef.current = null;
       }
 
+      /* 缩放动画 */
       if (scaleAnimRef.current) {
         const { from, to, start } = scaleAnimRef.current;
         const t = Math.min(1, (now - start) / TRANSITION_MS);
@@ -831,28 +1097,32 @@ export default function NetworkGraph() {
         if (t >= 1) scaleAnimRef.current = null;
       }
 
+      /* 过渡 */
       let transitionT = 1;
       if (transitionRef.current?.active) {
-        transitionT = Math.min(1, (now - transitionRef.current.start) / TRANSITION_MS);
+        transitionT = Math.min(
+          1,
+          (now - transitionRef.current.start) / TRANSITION_MS,
+        );
         if (transitionT >= 1) transitionRef.current.active = false;
         const ease = easeOutCubic(transitionT);
         if (g) {
           g.nodes.forEach((node) => {
-            node.x = node.startX + (node.targetX - node.startX) * ease;
-            node.y = node.startY + (node.targetY - node.startY) * ease;
+            node.x =
+              node.startX + (node.targetX - node.startX) * ease;
+            node.y =
+              node.startY + (node.targetY - node.startY) * ease;
             node.opacity = ease;
           });
-          g.links.forEach((link) => { link.opacity = ease; });
+          g.links.forEach((link) => {
+            link.opacity = ease;
+          });
         }
       }
 
-      if (now >= nextMeteorAtRef.current && isPreview) spawnMeteor(now);
-      meteorsRef.current = meteorsRef.current
-        .map((m) => ({ ...m, x: m.x + m.vx, y: m.y + m.vy, life: m.life + 1 }))
-        .filter((m) => m.life < m.maxLife);
-
+      /* 清画布 */
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = "#161616";
+      ctx.fillStyle = CANVAS_BG;
       ctx.fillRect(0, 0, w, h);
 
       const applyCamera = (rot = 0) => {
@@ -862,156 +1132,164 @@ export default function NetworkGraph() {
         if (rot) ctx.rotate(rot);
       };
 
+      /* ── 绘制预览星团 ── */
       if (preview && previewFadeRef.current > 0.01) {
         ctx.save();
         ctx.globalAlpha = previewFadeRef.current;
         applyCamera(previewAngleRef.current);
 
+        /* 连线（仅两端都在过滤结果中的连线） */
         preview.links.forEach((link) => {
           const a = preview.nodes[link.fromIdx];
           const b = preview.nodes[link.toIdx];
-          const inSub = subgraphIdsRef.current.has(a.id) && subgraphIdsRef.current.has(b.id);
-          const fadeOut = mode === "graph" && transitionT < 1 && !inSub ? 1 - transitionT : 1;
+          if (!filteredPreviewIds.has(a.id) || !filteredPreviewIds.has(b.id)) return;
+          const inSub =
+            subgraphIdsRef.current.has(a.id) &&
+            subgraphIdsRef.current.has(b.id);
+          const fadeOut =
+            mode === "graph" && transitionT < 1 && !inSub
+              ? 1 - transitionT
+              : 1;
           if (fadeOut <= 0) return;
-          const clusterColor = CLUSTER_DEFS[a.cluster].color;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
           if (link.cross) {
-            ctx.strokeStyle = `rgba(${clusterColor[0]},${clusterColor[1]},${clusterColor[2]},${0.06 * fadeOut})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = previewLinkColor(fadeOut, "cross");
+            ctx.lineWidth = 0.4;
           } else {
-            ctx.strokeStyle = `rgba(255,255,255,${0.08 * fadeOut})`;
-            ctx.lineWidth = 0.6;
+            ctx.strokeStyle = previewLinkColor(fadeOut, "inner");
+            ctx.lineWidth = 0.5;
           }
-          ctx.globalAlpha = previewFadeRef.current * fadeOut;
           ctx.stroke();
         });
 
+        /* 节点 — 仅渲染过滤后的节点 */
         preview.nodes.forEach((node) => {
+          if (!filteredPreviewIds.has(node.id)) return;
           const inSub = subgraphIdsRef.current.has(node.id);
-          const unrelatedFade = mode === "graph" && !inSub ? Math.max(0, 1 - transitionT * 1.4) : 1;
+          const unrelatedFade =
+            mode === "graph" && !inSub
+              ? Math.max(0, 1 - transitionT * 1.4)
+              : 1;
           if (unrelatedFade <= 0.01) return;
 
-          const breath = 0.5 + Math.sin(now * 0.001 / node.breathPeriod + node.phase) * 0.5;
-          const alpha = (0.25 + breath * 0.25) * unrelatedFade;
+          const breath =
+            0.6 +
+            Math.sin(
+              (now * 0.001) / node.breathPeriod + node.phase,
+            ) *
+              0.15;
+          const alpha =
+            (node.layer === "core" ? 0.65 : 0.4) * unrelatedFade * breath;
           const [r, gCol, b] = node.rgb;
-          const glow = node.r * (node.layer === "core" ? 5.5 : 4);
-
-          ctx.globalAlpha = previewFadeRef.current * alpha;
-          const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glow);
-          grad.addColorStop(0, `rgba(${r},${gCol},${b},${0.9})`);
-          grad.addColorStop(0.35, `rgba(${r},${gCol},${b},${0.35})`);
-          grad.addColorStop(1, `rgba(${r},${gCol},${b},0)`);
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, glow, 0, Math.PI * 2);
-          ctx.fillStyle = grad;
-          ctx.fill();
 
           ctx.beginPath();
           ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r},${gCol},${b},${0.55 + breath * 0.25})`;
+          ctx.fillStyle = rgbFill([r, gCol, b] as [number, number, number], alpha);
           ctx.fill();
+
+          /* 细边框 */
+          ctx.strokeStyle = rgbFill([r, gCol, b] as [number, number, number], alpha * 0.5);
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
         });
 
+        /* 星团标签 */
         CLUSTER_DEFS.forEach((c, i) => {
           const cc = clusterCenter(i);
-          ctx.globalAlpha = previewFadeRef.current * 0.55;
-          ctx.font = "12px Inter, PingFang SC, sans-serif";
+          ctx.globalAlpha = previewFadeRef.current * 0.5;
+          ctx.font = "11px Inter, PingFang SC, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillStyle = `rgba(${c.color[0]},${c.color[1]},${c.color[2]},0.75)`;
-          ctx.fillText(c.name, cc.x, cc.y - CLUSTER_CORE - CLUSTER_OUTER * 0.35 - 10);
-        });
-
-        meteorsRef.current.forEach((m) => {
-          const t = 1 - m.life / m.maxLife;
-          const cc = CLUSTER_DEFS[m.cluster].color;
-          ctx.globalAlpha = previewFadeRef.current * t * 0.85;
-          ctx.strokeStyle = `rgba(${cc[0]},${cc[1]},${cc[2]},${t})`;
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.moveTo(m.x, m.y);
-          ctx.lineTo(m.x - m.vx * 10, m.y - m.vy * 10);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(m.x, m.y, 1.8, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${t})`;
-          ctx.fill();
+          ctx.fillStyle = CLUSTER_LABEL_COLOR;
+          ctx.fillText(
+            c.name,
+            cc.x,
+            cc.y - CLUSTER_CORE - CLUSTER_OUTER * 0.35 - 8,
+          );
         });
 
         ctx.restore();
       }
 
+      /* ── 绘制子图 ── */
       if (g && mode === "graph") {
         ctx.save();
         applyCamera();
 
         const maxAmt = Math.max(...g.links.map((l) => l.amount), 1);
-        const pulse = 0.6 + Math.sin(now * 0.003) * 0.2;
 
+        /* 连线 — 纯色，无粒子动画，粗细表示交易规模 */
         g.links.forEach((link) => {
           if (link.opacity < 0.05) return;
           const a = g.nodes[link.fromIdx];
           const b = g.nodes[link.toIdx];
-          const alpha = (0.22 + (link.amount / maxAmt) * 0.4) * link.opacity;
+          const width =
+            0.5 + (link.amount / maxAmt) * 2.5;
+          const alpha = (0.25 + (link.amount / maxAmt) * 0.35) * link.opacity;
+
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = `rgba(6,182,212,${alpha})`;
-          ctx.lineWidth = 0.7 + (link.amount / maxAmt) * 2.2;
+          /* 连线颜色匹配风险较高的节点 */
+          const riskColor =
+            a.risk === "高风险" || b.risk === "高风险"
+              ? riskRgb("高风险")
+              : a.risk === "中高风险" || b.risk === "中高风险"
+                ? riskRgb("中高风险")
+                : ([161, 161, 170] as [number, number, number]);
+          ctx.strokeStyle = rgbFill(riskColor, alpha);
+          ctx.lineWidth = width;
           ctx.stroke();
-
-          link.particleT = (link.particleT + 0.005) % 1;
-          const px = a.x + (b.x - a.x) * link.particleT;
-          const py = a.y + (b.y - a.y) * link.particleT;
-          ctx.beginPath();
-          ctx.arc(px, py, 1.6, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(34,211,238,${alpha * 1.4})`;
-          ctx.fill();
         });
 
+        /* 节点 — 纯色填充，无发光光晕 */
         g.nodes.forEach((node) => {
           if (node.opacity < 0.05) return;
           const isCenter = node.role === "center";
           const isHover = hoverRef.current?.id === node.id;
           const isActive = centerId === node.id;
-          const r = isCenter ? node.radius * (1 + pulse * 0.1) : node.radius;
-          const haloR = r * (isCenter ? 5.5 : isHover || isActive ? 4.2 : 3.4);
+          const r = node.radius;
           const nodeAlpha = node.opacity;
 
-          const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, haloR);
-          if (isCenter) {
-            grad.addColorStop(0, `rgba(255,255,255,${0.95 * pulse * nodeAlpha})`);
-            grad.addColorStop(0.35, `rgba(255,255,255,${0.3 * pulse * nodeAlpha})`);
-            grad.addColorStop(1, "rgba(255,255,255,0)");
-          } else if (node.role === "seller") {
-            grad.addColorStop(0, `rgba(6,182,212,${0.9 * nodeAlpha})`);
-            grad.addColorStop(0.45, `rgba(6,182,212,${0.18 * nodeAlpha})`);
-            grad.addColorStop(1, "rgba(6,182,212,0)");
-          } else {
-            grad.addColorStop(0, `rgba(236,72,153,${0.9 * nodeAlpha})`);
-            grad.addColorStop(0.45, `rgba(236,72,153,${0.18 * nodeAlpha})`);
-            grad.addColorStop(1, "rgba(236,72,153,0)");
+          /* 选中/悬停外环 */
+          if ((isHover || isActive) && !isCenter) {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, r + 4, 0, Math.PI * 2);
+            ctx.strokeStyle = HOVER_RING_COLOR;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
           }
 
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, haloR, 0, Math.PI * 2);
-          ctx.fillStyle = grad;
-          ctx.fill();
-
+          /* 实体填充 */
           ctx.beginPath();
           ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = isCenter ? "#ffffff" : node.role === "seller" ? "#06b6d4" : "#ec4899";
-          ctx.globalAlpha = nodeAlpha;
-          ctx.fill();
-          ctx.globalAlpha = 1;
 
-          if (isHover || isActive) {
-            ctx.font = "12px Inter, PingFang SC, sans-serif";
+          if (isCenter) {
+            ctx.fillStyle = CANVAS_CENTER_FILL;
+          } else {
+            const [rr, gg, bb] = riskRgb(node.risk);
+            ctx.fillStyle = rgbFill([rr, gg, bb] as [number, number, number], 0.85 * nodeAlpha);
+          }
+          ctx.fill();
+
+          /* 边框 */
+          ctx.strokeStyle = isCenter
+            ? CENTER_BORDER_COLOR
+            : whiteAlpha(0.15 * nodeAlpha);
+          ctx.lineWidth = isCenter ? 1.5 : 0.8;
+          ctx.stroke();
+
+          /* 标签 */
+          if (isHover || isActive || isCenter) {
+            ctx.font = "11px Inter, PingFang SC, sans-serif";
             ctx.textAlign = "center";
-            ctx.fillStyle = `rgba(255,255,255,${0.85 * nodeAlpha})`;
-            const label = node.name.length > 14 ? `${node.name.slice(0, 13)}…` : node.name;
-            ctx.fillText(label, node.x, node.y - r - 12);
+            ctx.fillStyle = whiteAlpha(0.85 * nodeAlpha);
+            const label =
+              node.name.length > 12
+                ? `${node.name.slice(0, 11)}…`
+                : node.name;
+            ctx.fillText(label, node.x, node.y - r - 10);
           }
         });
 
@@ -1023,25 +1301,33 @@ export default function NetworkGraph() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [registryReady, mode, centerId]);
 
-  const zoomAt = useCallback((mx: number, my: number, factor: number) => {
-    const vp = viewportRef.current;
-    const before = screenToWorld(mx, my);
-    vp.scale = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, vp.scale * factor));
-    const after = screenToWorld(mx, my);
-    vp.panX += before.x - after.x;
-    vp.panY += before.y - after.y;
-    scaleAnimRef.current = null;
-  }, [screenToWorld]);
+  /* ── 缩放 / 交互 ── */
 
-  const onWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const factor = e.deltaY > 0 ? 0.92 : 1.08;
-    zoomAt(mx, my, factor);
-  }, [zoomAt]);
+  const zoomAt = useCallback(
+    (mx: number, my: number, factor: number) => {
+      const vp = viewportRef.current;
+      const before = screenToWorld(mx, my);
+      vp.scale = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, vp.scale * factor));
+      const after = screenToWorld(mx, my);
+      vp.panX += before.x - after.x;
+      vp.panY += before.y - after.y;
+      scaleAnimRef.current = null;
+    },
+    [screenToWorld],
+  );
+
+  const onWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const factor = e.deltaY > 0 ? 0.92 : 1.08;
+      zoomAt(mx, my, factor);
+    },
+    [zoomAt],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1051,7 +1337,10 @@ export default function NetworkGraph() {
   }, [onWheel]);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    pointersRef.current.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY,
+    });
     if (pointersRef.current.size === 2) {
       const pts = [...pointersRef.current.values()];
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -1073,7 +1362,10 @@ export default function NetworkGraph() {
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
-    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    pointersRef.current.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY,
+    });
 
     if (pointersRef.current.size >= 2 && pinchRef.current) {
       const pts = [...pointersRef.current.values()];
@@ -1082,7 +1374,13 @@ export default function NetworkGraph() {
       if (rect) {
         const mx = (pts[0].x + pts[1].x) / 2 - rect.left;
         const my = (pts[0].y + pts[1].y) / 2 - rect.top;
-        const newScale = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, pinchRef.current.scale * (dist / pinchRef.current.dist)));
+        const newScale = Math.max(
+          ZOOM_MIN,
+          Math.min(
+            ZOOM_MAX,
+            pinchRef.current.scale * (dist / pinchRef.current.dist),
+          ),
+        );
         const before = screenToWorld(mx, my);
         viewportRef.current.scale = newScale;
         const after = screenToWorld(mx, my);
@@ -1122,7 +1420,13 @@ export default function NetworkGraph() {
 
   const onClick = (e: React.MouseEvent) => {
     if (mode !== "graph") return;
-    if (Math.hypot(e.clientX - dragRef.current.startX, e.clientY - dragRef.current.startY) > 8) return;
+    if (
+      Math.hypot(
+        e.clientX - dragRef.current.startX,
+        e.clientY - dragRef.current.startY,
+      ) > 8
+    )
+      return;
     const rect = canvasRef.current!.getBoundingClientRect();
     const node = hitTest(e.clientX - rect.left, e.clientY - rect.top);
     if (node) {
@@ -1133,179 +1437,531 @@ export default function NetworkGraph() {
     }
   };
 
-  return (
-    <div
-      ref={containerRef}
-      className="fixed top-0 right-0 bottom-0 left-0 z-30 md:left-56 bg-[#161616]"
-    >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing touch-none"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onPointerLeave={() => {
-          if (!dragRef.current.active) {
-            hoverRef.current = null;
-            setHoverId(null);
-          }
-        }}
-        onClick={onClick}
-      />
+  /* ── 加载状态 ── */
 
-      {/* 搜索 — 左上角 glass */}
-      <div className="absolute top-4 left-4 z-20 w-[min(100%-2rem,380px)] pointer-events-none">
-        <div className="glass-panel rounded-2xl p-3 pointer-events-auto">
-          <div className="flex gap-2 items-center">
-            <Input
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setSearchError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder={mode === "preview" ? "探索企业交易网络" : "搜索其他企业..."}
-              disabled={searching || !registryReady}
-              className="flex-1 min-w-0 h-10 text-sm bg-white/[0.05] border-white/12"
-            />
-            <button
-              type="button"
-              onClick={handleSearch}
-              disabled={searching || !registryReady}
-              aria-label="搜索"
-              className="rounded-lg border border-white/10 bg-white/[0.06] p-2.5 text-neutral-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-colors disabled:opacity-40"
-            >
-              <Search size={18} />
-            </button>
-            {mode === "graph" && (
-              <button
-                type="button"
-                onClick={resetView}
-                aria-label="返回星团"
-                className="rounded-lg border border-white/10 bg-white/[0.06] p-2.5 text-neutral-400 hover:text-white transition-colors"
-              >
-                <RotateCcw size={17} />
-              </button>
-            )}
+  /* ══════════════════════════════════════
+     渲染
+     ══════════════════════════════════════ */
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden sm:gap-3">
+      <div data-reveal className="shrink-0">
+      {/* ═══ 顶部控制栏 ═══ */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div>
+            <h1 className="text-base sm:text-lg font-semibold text-neutral-100">
+              交易网络
+            </h1>
+            <p className="text-[10px] text-neutral-500 mt-0.5">
+              企业图谱 · 关系挖掘
+            </p>
           </div>
-          {mode === "preview" && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
-              {EXAMPLE_BUTTONS.map((ex) => (
-                <button
-                  key={ex.label}
-                  type="button"
-                  disabled={searching || !registryReady}
-                  onClick={() => handleExample(ex.query)}
-                  className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-neutral-400 hover:border-white/22 hover:bg-white/[0.07] hover:text-neutral-200 disabled:opacity-40 transition-colors"
-                >
-                  {ex.label}
-                </button>
-              ))}
-            </div>
-          )}
-          {searchError && <p className="mt-2 text-xs text-red-400/90">{searchError}</p>}
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* 风险等级筛选 */}
+          <select
+            value={riskFilter}
+            onChange={(e) => setRiskFilter(e.target.value)}
+            className="h-8 rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 text-xs text-neutral-300 outline-none focus:border-blue-500/40 transition-colors duration-200 ease-out"
+          >
+            <option value="全部">全部风险</option>
+            <option value="高风险">高风险</option>
+            <option value="中高风险">中高风险</option>
+            <option value="中等风险">中等风险</option>
+            <option value="中低风险">中低风险</option>
+            <option value="低风险">低风险</option>
+          </select>
+
+          {/* 行业筛选 */}
+          <select
+            value={industryFilter}
+            onChange={(e) => setIndustryFilter(e.target.value)}
+            className="h-8 rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 text-xs text-neutral-300 outline-none focus:border-blue-500/40 transition-colors duration-200 ease-out"
+          >
+            <option value="全部">全部行业</option>
+            <option value="制造业">制造业</option>
+            <option value="信息技术">信息技术</option>
+            <option value="批发零售">批发零售</option>
+            <option value="新能源">新能源</option>
+            <option value="建筑业">建筑业</option>
+          </select>
+
+          {/* 重置 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetView}
+            className="h-8 border-white/[0.1] text-xs gap-1.5 hover:bg-white/[0.06] hover:border-white/[0.18] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+          >
+            <RotateCcw size={13} />
+            重置
+          </Button>
+
+          {/* 导出图谱为PNG */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const canvas = canvasRef.current;
+              if (!canvas) return;
+              const link = document.createElement("a");
+              link.download = "交易网络图谱.png";
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+            }}
+            className="h-8 border-white/[0.1] text-xs gap-1.5 hover:bg-white/[0.06] hover:border-white/[0.18] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+          >
+            <Download size={13} />
+            导出
+          </Button>
         </div>
       </div>
+      </div>
 
-      {/* 预览底部信息栏 */}
-      {mode === "preview" && (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-          <div className="glass-panel rounded-full px-6 py-2.5 text-xs text-neutral-400 whitespace-nowrap">
-            200 家交易企业&nbsp;&nbsp;|&nbsp;&nbsp;{PREVIEW_EDGE_COUNT.toLocaleString()} 条交易关系&nbsp;&nbsp;|&nbsp;&nbsp;5 大行业星团
+      {/* ═══ 主体双栏 ═══ */}
+      <div data-reveal className="flex min-h-0 flex-1 gap-2 sm:gap-3">
+        {/* ── 左栏 75%：Canvas 图谱 ── */}
+        <div className="flex-[3] min-w-0 relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-elevated)] overflow-hidden">
+          {/* Canvas */}
+          <div
+            ref={canvasWrapRef}
+            className="absolute inset-0"
+          >
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              onPointerLeave={() => {
+                if (!dragRef.current.active) {
+                  hoverRef.current = null;
+                  setHoverId(null);
+                }
+              }}
+              onClick={onClick}
+            />
           </div>
-        </div>
-      )}
 
-      {/* 子图图例 */}
-      {mode === "graph" && (
-        <div className="absolute bottom-5 left-4 z-20 pointer-events-none">
-          <div className="glass-panel rounded-xl px-4 py-3 text-xs text-neutral-400 space-y-1.5">
-            <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_8px_white]" />中心企业</div>
-            <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />卖方</div>
-            <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-pink-500" />买方</div>
-          </div>
-        </div>
-      )}
-
-      {/* 右侧详情面板 */}
-      <aside
-        className={cn(
-          "absolute top-0 right-0 bottom-0 z-20 w-80 glass-panel border-l border-white/10 border-r-0 border-t-0 border-b-0 rounded-none pointer-events-auto transition-transform duration-500 ease-out",
-          panelVisible && centerNode ? "translate-x-0" : "translate-x-full",
-        )}
-      >
-        {centerNode && (
-          <div className="flex h-full flex-col p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <h2 className="text-base font-medium text-white leading-snug line-clamp-2">{centerNode.name}</h2>
-                <p className="text-xs text-neutral-500 mt-1">{centerNode.industry} · {centerNode.id}</p>
-              </div>
+          {/* 搜索浮层 */}
+          <div className="absolute top-3 left-3 z-10">
+            <div className="flex gap-1.5 items-center">
+              <Input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSearchError("");
+                }}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder={
+                  mode === "preview" ? "搜索企业或编号…" : "搜索其他企业…"
+                }
+                disabled={searching || !registryReady}
+                className="w-48 sm:w-56 h-8 text-xs bg-white/[0.04] border-white/[0.1]"
+              />
               <button
                 type="button"
-                onClick={resetView}
-                className="shrink-0 rounded-lg p-1.5 text-neutral-500 hover:bg-white/10 hover:text-white"
-                aria-label="关闭面板"
+                onClick={handleSearch}
+                disabled={searching || !registryReady}
+                aria-label="搜索"
+                className="rounded-lg border border-white/[0.1] bg-white/[0.04] p-1.5 text-neutral-400 hover:text-neutral-200 hover:border-white/[0.2] hover:bg-white/[0.08] active:bg-white/[0.1] transition-colors duration-200 ease-out disabled:opacity-40"
               >
-                <X size={16} />
+                <Search size={15} />
               </button>
             </div>
+            {mode === "preview" && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {EXAMPLE_BUTTONS.map((ex) => (
+                  <button
+                    key={ex.label}
+                    type="button"
+                    disabled={searching || !registryReady}
+                    onClick={() => handleExample(ex.query)}
+                    className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-neutral-400 hover:border-white/[0.16] hover:bg-white/[0.06] hover:text-neutral-200 disabled:opacity-40 transition-colors duration-200 ease-out"
+                  >
+                    {ex.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {searchError && (
+              <p className="mt-1.5 text-[10px] text-rose-400">
+                {searchError}
+              </p>
+            )}
+          </div>
 
-            <div className="flex items-end gap-3 mt-5">
-              <span className={cn("text-4xl font-bold font-mono tabular-nums leading-none", RISK_LEVEL_TEXT[centerNode.risk] ?? "text-white")}>
-                {centerNode.score.toFixed(0)}
+          {/* 预览底部信息条 */}
+          {mode === "preview" && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+              <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1.5 text-[10px] text-neutral-500 whitespace-nowrap">
+                {graphStats.totalNodes} 家企业 ·{" "}
+                {graphStats.totalEdges.toLocaleString()} 条交易 · 5 大星团
               </span>
-              <Badge className={RISK_LEVEL_COLORS[centerNode.risk] ?? RISK_LEVEL_COLORS["高风险"]}>
-                {centerNode.risk}
-              </Badge>
+            </div>
+          )}
+
+          {/* 缩放控件 — 右下角 */}
+          <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                const { w, h } = sizeRef.current;
+                zoomAt(w / 2, h / 2, 1.15);
+              }}
+              className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-neutral-400 hover:text-neutral-200 hover:border-white/[0.2] hover:bg-white/[0.06] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+              aria-label="放大"
+            >
+              <Plus size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const { w, h } = sizeRef.current;
+                zoomAt(w / 2, h / 2, 0.87);
+              }}
+              className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-neutral-400 hover:text-neutral-200 hover:border-white/[0.2] hover:bg-white/[0.06] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+              aria-label="缩小"
+            >
+              <Minus size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={resetView}
+              className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-neutral-400 hover:text-neutral-200 hover:border-white/[0.2] hover:bg-white/[0.06] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+              aria-label="重置"
+            >
+              <RotateCcw size={13} />
+            </button>
+          </div>
+
+          {/* 图例 — 左下角 */}
+          {mode === "graph" && (
+            <div className="absolute bottom-3 left-3 z-10">
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-[10px] text-neutral-500 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-white shrink-0" />
+                  中心企业
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{
+                      background: RISK_CHART_COLORS["低风险"],
+                    }}
+                  />
+                  卖方 / 买方（色阶对应风险）
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── 右栏 25%：统计 + 图例 + 企业快照 ── */}
+        <div className="w-72 shrink-0 space-y-3 hidden lg:flex lg:flex-col overflow-y-auto">
+          {/* 图谱统计 */}
+          <Card className="rounded-lg">
+            <CardContent className="pt-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Link2 size={14} className="text-neutral-500" />
+                <span className="text-xs font-medium text-neutral-400 tracking-wide">
+                  图谱统计
+                </span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-neutral-500">
+                    关联企业
+                  </span>
+                  <span className="text-sm font-mono tabular-nums text-neutral-200">
+                    {graphStats.totalNodes}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-neutral-500">
+                    交易关系
+                  </span>
+                  <span className="text-sm font-mono tabular-nums text-neutral-200">
+                    {graphStats.totalEdges.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-neutral-500">
+                    高风险关联
+                  </span>
+                  <span
+                    className="text-sm font-mono tabular-nums"
+                    style={{ color: RISK_CHART_COLORS["高风险"] }}
+                  >
+                    {graphStats.highRiskLinks}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+      </Card>
+
+          {/* 图例说明 */}
+          <Card className="rounded-lg">
+            <CardContent className="pt-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Filter size={14} className="text-neutral-500" />
+                <span className="text-xs font-medium text-neutral-400 tracking-wide">
+                  图例
+                </span>
             </div>
 
-            <p className="text-xs text-neutral-500 mt-3">
-              关联企业 {centerNode.relatedCount} 家 · 交易量 {formatAmount(centerNode.volume)}
-            </p>
+              {/* 风险等级色块 */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-neutral-600">
+                  企业风险等级
+                </span>
+                <div className="space-y-1">
+                  {(["高风险", "中高风险", "中等风险", "中低风险", "低风险"] as const).map(
+                    (level) => (
+                      <div
+                        key={level}
+                        className="flex items-center gap-2"
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            background: RISK_CHART_COLORS[level],
+                          }}
+                        />
+                        <span className="text-[10px] text-neutral-500">
+                          {level}
+                        </span>
+          </div>
+                    ),
+                  )}
+          </div>
+              </div>
 
-            <div className="mono-divider my-5 opacity-50" />
+              {/* 交易规模 */}
+              <div className="space-y-1.5 pt-1 border-t border-white/[0.04]">
+                <span className="text-[10px] text-neutral-600">
+                  交易规模（连线粗细）
+                </span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-px bg-white/20" />
+                    <span className="text-[10px] text-neutral-500">小额</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-0.5 bg-white/50" />
+                    <span className="text-[10px] text-neutral-500">中额</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-1 bg-white/70" />
+                    <span className="text-[10px] text-neutral-500">大额</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <h3 className="text-xs font-medium text-neutral-400 mb-3">主要关联交易</h3>
-            <ul className="flex-1 space-y-2 overflow-y-auto min-h-0 -mr-1 pr-1">
-              {relatedTop5.map((rel) => (
-                <li key={rel.id}>
+          {/* 选中企业快照 */}
+          {centerNode && (
+            <Card className="rounded-lg">
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-medium text-neutral-100 leading-snug line-clamp-2">
+                      {centerNode.name}
+                    </h3>
+                    <p className="text-[10px] text-neutral-500 mt-0.5">
+                      {centerNode.industry} · {centerNode.id}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-end gap-2">
+                  <span
+                    className="text-2xl font-bold font-mono tabular-nums leading-none"
+                    style={{
+                      color:
+                        RISK_CHART_COLORS[centerNode.risk] ??
+                        RISK_CHART_COLORS["中等风险"],
+                    }}
+                  >
+                    {centerNode.score.toFixed(0)}
+                  </span>
+                  <Badge
+                    className={cn(
+                      "text-[10px]",
+                      RISK_LEVEL_COLORS[centerNode.risk] ??
+                        RISK_LEVEL_COLORS["中等风险"],
+                    )}
+                  >
+                    {centerNode.risk}
+                  </Badge>
+                </div>
+
+                <p className="text-[10px] text-neutral-500">
+                  关联 {centerNode.relatedCount} 家 · 交易量{" "}
+                  {formatAmount(centerNode.volume)}
+                </p>
+
+                {/* 核心经营指标 */}
+                <div className="space-y-1 pt-2 border-t border-white/[0.04]">
+                  {(["tax_health", "authenticity", "finance"] as const).map(
+                    (k) => {
+                      const ent = registryRef.current.get(centerNode.id);
+                      const score = ent?.dimensions?.[k];
+                      return (
+                        <div
+                          key={k}
+                          className="flex justify-between text-[10px]"
+                        >
+                          <span className="text-neutral-500">
+                            {DIMENSION_LABELS[k]}
+                          </span>
+                          <span className="font-mono text-neutral-300">
+                            {score != null ? score.toFixed(0) : "—"}
+                          </span>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    className="flex-1 h-7 text-xs"
+                    onClick={() =>
+                      navigate(`/enterprise/${centerNode.id}`)
+                    }
+                  >
+                    完整评估
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs border-white/[0.1] hover:bg-white/[0.06] active:bg-white/[0.1] transition-colors duration-200 ease-out"
+                    onClick={() => {
+                      if (centerNode) showSubGraph(centerNode.id);
+                    }}
+                  >
+                    重聚焦
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 关联交易列表 */}
+          {centerNode && relatedTop5.length > 0 && (
+            <Card className="rounded-lg">
+              <CardContent className="pt-4 space-y-2">
+                <span className="text-xs font-medium text-neutral-400 tracking-wide">
+                  主要关联
+                </span>
+                {relatedTop5.map((rel) => (
                   <button
+                    key={rel.id}
                     type="button"
                     onClick={() => showSubGraph(rel.id)}
                     className={cn(
-                      "w-full rounded-xl border px-3 py-2.5 text-left transition-colors",
+                      "w-full rounded-lg border px-3 py-2 text-left transition-colors duration-200",
                       hoverId === rel.id || centerId === rel.id
-                        ? "border-cyan-500/35 bg-cyan-500/10"
-                        : "border-white/10 bg-white/[0.03] hover:border-white/18 hover:bg-white/[0.06]",
+                        ? "border-white/[0.2] bg-white/[0.06]"
+                        : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12]",
                     )}
                   >
-                    <p className="text-sm text-neutral-200 truncate">{rel.name}</p>
+                    <p className="text-xs text-neutral-200 truncate">
+                      {rel.name}
+                    </p>
                     <div className="flex items-center justify-between mt-1 gap-2">
-                      <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded border",
-                        rel.role === "seller" ? "text-cyan-400 border-cyan-500/30 bg-cyan-500/10" : "text-pink-400 border-pink-500/30 bg-pink-500/10",
-                      )}>
+                      <span
+                        className={cn(
+                          "text-[9px] px-1.5 py-0.5 rounded border",
+                          rel.role === "seller"
+                            ? "text-teal-400 border-teal-500/25 bg-teal-500/10"
+                            : "text-rose-400 border-rose-500/25 bg-rose-500/10",
+                        )}
+                      >
                         {roleLabel(rel.role)}
                       </span>
-                      <span className="text-xs text-neutral-500 tabular-nums">{formatAmount(rel.amount)}</span>
+                      <span className="text-[10px] text-neutral-500 font-mono tabular-nums">
+                        {formatAmount(rel.amount)}
+                      </span>
                     </div>
-                  </button>
-                </li>
-              ))}
-              {relatedTop5.length === 0 && (
-                <li className="text-xs text-neutral-600 py-4 text-center">暂无关联交易</li>
-              )}
-            </ul>
+          </button>
+                ))}
+              </CardContent>
+        </Card>
+      )}
+        </div>
+      </div>
 
-            <Button
-              className="w-full mt-4 bg-white text-black hover:bg-neutral-200"
-              onClick={() => navigate(`/enterprise/${centerNode.id}`)}
+      {/* ═══ 底部统计卡片 ═══ */}
+      <div className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3">
+        <Card className="rounded-lg">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Link2 size={15} className="text-blue-400" />
+              </span>
+              <span className="text-[10px] text-neutral-500">总交易关系</span>
+            </div>
+            <p className="text-[28px] font-bold font-mono tabular-nums text-neutral-100 leading-none">
+              {graphStats.totalEdges.toLocaleString()}
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <span className="text-[10px] text-neutral-600">
+                {graphStats.totalEdges > 0 ? "发票交易边" : "模拟数据"}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-lg">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <Building2 size={15} className="text-indigo-400" />
+              </span>
+              <span className="text-[10px] text-neutral-500">关联企业</span>
+            </div>
+            <p className="text-[28px] font-bold font-mono tabular-nums text-neutral-100 leading-none">
+              {graphStats.totalNodes}
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <span className="text-[10px] text-neutral-600">
+                {typeof graphStats.totalNodes === "string" ? graphStats.totalNodes : "关联节点"}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-lg">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                <AlertTriangle size={15} className="text-rose-400" />
+              </span>
+              <span className="text-[10px] text-neutral-500">高风险关联</span>
+            </div>
+            <p
+              className="text-[28px] font-bold font-mono tabular-nums leading-none"
+              style={{ color: RISK_CHART_COLORS["高风险"] }}
             >
-              查看完整评估
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </aside>
+              {graphStats.highRiskLinks}
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <span className="text-[10px] text-neutral-600">
+                {graphStats.highRiskLinks > 0 ? "需关注企业" : "无高风险关联"}
+              </span>
+              <span className="text-[10px] text-neutral-600 ml-1">环比</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

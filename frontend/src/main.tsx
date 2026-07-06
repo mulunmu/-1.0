@@ -5,6 +5,8 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <div id="app-root" className="min-h-screen">
+      <App />
+    </div>
   </StrictMode>
 );

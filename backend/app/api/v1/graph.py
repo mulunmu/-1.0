@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.api.deps import get_current_user_optional
 from app.services import graph_service
 
 router = APIRouter(prefix="/graph", tags=["graph"])
@@ -9,6 +10,7 @@ router = APIRouter(prefix="/graph", tags=["graph"])
 async def industry_path(
     from_id: str = Query(..., alias="from", description="起始企业ID，如 ENT001"),
     to_id: str = Query(..., alias="to", description="目标企业ID，如 ENT005"),
+    _user: dict | None = Depends(get_current_user_optional),
 ):
     if not graph_service.is_data_loaded():
         raise HTTPException(status_code=404, detail="产业链数据未导入，请联系管理员")
@@ -20,7 +22,7 @@ async def industry_path(
 
 
 @router.get("/key-companies")
-async def key_companies(top_n: int = Query(20, ge=1, le=50)):
+async def key_companies(top_n: int = Query(20, ge=1, le=50), _user: dict | None = Depends(get_current_user_optional)):
     if not graph_service.is_data_loaded():
         raise HTTPException(status_code=404, detail="产业链数据未导入，请联系管理员")
     return graph_service.get_key_companies(top_n)

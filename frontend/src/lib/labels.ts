@@ -103,3 +103,4 @@ export const DIMENSION_WEIGHTS: Record<keyof typeof DIMENSION_LABELS, string> = 
 };
 
 export const DIM_KEYS = ["tax_health", "authenticity", "industry", "legal", "finance"] as const;
+export type DimKey = (typeof DIM_KEYS)[number];

@@ -1,5 +1,6 @@
 """评估报告邮件发送（可选功能，未配置 EMAIL_* 环境变量时不影响其他功能）"""
 import os
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -7,15 +8,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NOT_CONFIGURED_MSG = "邮件服务未配置，请下载后手动发送"
+RATE_LIMIT_MSG = "邮件发送过于频繁，请稍后重试"
+
+# 每小时最多 10 封，防滥发
+_EMAIL_TIMESTAMPS: list[float] = []
+_EMAIL_HOURLY_LIMIT = 10
 
 
 def is_configured() -> bool:
     return bool(os.getenv("EMAIL_SENDER") and os.getenv("EMAIL_PASSWORD"))
 
 
+def _check_email_rate() -> bool:
+    now = time.time()
+    cutoff = now - 3600
+    while _EMAIL_TIMESTAMPS and _EMAIL_TIMESTAMPS[0] < cutoff:
+        _EMAIL_TIMESTAMPS.pop(0)
+    return len(_EMAIL_TIMESTAMPS) < _EMAIL_HOURLY_LIMIT
+
+
 def send_report(recipient: str, enterprise_name: str, pdf_path: Path) -> None:
     if not is_configured():
         raise RuntimeError(NOT_CONFIGURED_MSG)
+    if not _check_email_rate():
+        raise RuntimeError(RATE_LIMIT_MSG)
+    _EMAIL_TIMESTAMPS.append(time.time())
 
     import yagmail
 
